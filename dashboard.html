@@ -2,38 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Fixed</title>
+<title>Dashboard</title>
 
 <style>
-body{
+/* RESET */
+*{
   margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
   font-family:Arial;
   background:#0b1220;
   color:white;
 }
 
-/* TOP */
+/* TOPBAR */
 .topbar{
-  padding:15px;
+  padding:12px 20px;
   background:#111827;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-/* MAIN WRAPPER */
+/* CONTAINER */
 .container{
-  padding:20px;
+  padding:15px 20px 20px;
   max-width:1200px;
   margin:auto;
 }
 
-/* CARD STYLE (IMPORTANT FIX) */
+/* CARDS */
 .card{
   background:#111827;
   padding:15px;
   border-radius:12px;
-  margin-bottom:20px; /* 🔥 space between sections */
+  margin-bottom:15px;
+}
+
+/* TITLES */
+h3{
+  margin-bottom:10px;
 }
 
 /* INPUTS */
@@ -52,6 +63,7 @@ button{
   border-radius:8px;
   background:#38bdf8;
   cursor:pointer;
+  color:black;
 }
 
 /* STATS */
@@ -85,7 +97,7 @@ th{
   color:#38bdf8;
 }
 
-/* LINK */
+/* LINKS */
 a{
   color:#38bdf8;
 }
@@ -121,7 +133,7 @@ a{
 
 <div class="container">
 
-<!-- 🔥 ADD SECTION -->
+<!-- ADD -->
 <div class="card">
   <h3>➕ Add Project</h3>
 
@@ -131,7 +143,7 @@ a{
   <button onclick="add()">Add</button>
 </div>
 
-<!-- 🔥 STATS SECTION -->
+<!-- STATS -->
 <div class="card">
   <h3>📊 Stats</h3>
 
@@ -148,12 +160,12 @@ a{
   </div>
 </div>
 
-<!-- 🔥 SEARCH -->
+<!-- SEARCH -->
 <div class="card">
   🔍 <input id="search" oninput="render()" placeholder="Search by username">
 </div>
 
-<!-- 🔥 TABLE -->
+<!-- TABLE -->
 <div class="card">
   <table>
     <thead>
@@ -273,6 +285,7 @@ function logout(){
   window.location.href="index.html";
 }
 
+/* INIT */
 render();
 
 </script>
