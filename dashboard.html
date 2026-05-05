@@ -13,19 +13,11 @@ body{
   display:flex;
 }
 
-/* Sidebar */
 .sidebar{
   width:220px;
-  height:100vh;
   background:#111827;
+  height:100vh;
   padding:20px;
-}
-
-.sidebar a{
-  display:block;
-  color:#94a3b8;
-  margin:10px 0;
-  cursor:pointer;
 }
 
 .main{
@@ -33,8 +25,7 @@ body{
   padding:20px;
 }
 
-/* Inputs */
-input{
+input, select{
   padding:10px;
   margin:5px;
   border:none;
@@ -51,7 +42,6 @@ button{
   cursor:pointer;
 }
 
-/* Card */
 .card{
   background:#1e293b;
   padding:12px;
@@ -75,25 +65,32 @@ button{
 <body>
 
 <script>
-// 🔐 check login
-let user = localStorage.getItem("user");
-if(!user){
-  window.location.href = "index.html";
+let currentUser = localStorage.getItem("user");
+if(!currentUser){
+  window.location.href="index.html";
 }
 </script>
 
 <div class="sidebar">
-  <h3>👤 <span id="username"></span></h3>
-  <a onclick="logout()">Logout</a>
+  <h3>👤 <span id="u"></span></h3>
+
+  <p>Filter by user:</p>
+  <select id="filter" onchange="render()">
+    <option value="all">All</option>
+  </select>
+
+  <br><br>
+  <button onclick="logout()">Logout</button>
 </div>
 
 <div class="main">
 
-<h2>My Projects 🚀</h2>
+<h2>📂 Projects Dashboard</h2>
 
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
-<button onclick="addProject()">Add</button>
+<input id="user" placeholder="Project owner (user)">
+<button onclick="add()">Add</button>
 
 <div id="list"></div>
 
@@ -101,28 +98,47 @@ if(!user){
 
 <script>
 
-document.getElementById("username").innerText = user;
+document.getElementById("u").innerText = currentUser;
 
-/* get user projects */
-function getProjects(){
-  return JSON.parse(localStorage.getItem("projects_"+user)) || [];
+/* DATA */
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-/* save */
-function saveProjects(data){
-  localStorage.setItem("projects_"+user, JSON.stringify(data));
+function save(data){
+  localStorage.setItem("projects", JSON.stringify(data));
 }
 
-/* render */
+/* INIT USERS LIST */
+function updateUsers(){
+  let data = getData();
+  let users = [...new Set(data.map(p=>p.user))];
+
+  let filter = document.getElementById("filter");
+  filter.innerHTML = `<option value="all">All</option>`;
+
+  users.forEach(u=>{
+    filter.innerHTML += `<option value="${u}">${u}</option>`;
+  });
+}
+
+/* RENDER */
 function render(){
-  let projects = getProjects();
+  let data = getData();
+  let filter = document.getElementById("filter").value;
+
   let list = document.getElementById("list");
   list.innerHTML = "";
 
-  projects.forEach((p,i)=>{
+  let filtered = filter==="all"
+    ? data
+    : data.filter(p=>p.user===filter);
+
+  filtered.forEach((p,i)=>{
     list.innerHTML += `
       <div class="card">
         <h3>${p.name}</h3>
+        <p>👤 ${p.user}</p>
         <a href="${p.link}" target="_blank">${p.link}</a><br>
 
         <button class="btn" onclick="edit(${i})">Edit</button>
@@ -130,48 +146,54 @@ function render(){
       </div>
     `;
   });
+
+  updateUsers();
 }
 
-/* add */
-function addProject(){
-  let projects = getProjects();
+/* ADD */
+function add(){
+  let data = getData();
 
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
+  let user = document.getElementById("user").value;
 
-  if(!name || !link) return alert("Fill fields");
+  if(!name || !link || !user){
+    return alert("Fill all fields");
+  }
 
-  projects.push({name, link});
-  saveProjects(projects);
+  data.push({name, link, user});
+  save(data);
   render();
 }
 
-/* delete */
+/* DELETE */
 function del(i){
-  let projects = getProjects();
-  projects.splice(i,1);
-  saveProjects(projects);
+  let data = getData();
+  data.splice(i,1);
+  save(data);
   render();
 }
 
-/* edit */
+/* EDIT */
 function edit(i){
-  let projects = getProjects();
+  let data = getData();
 
-  let n = prompt("Name", projects[i].name);
-  let l = prompt("Link", projects[i].link);
+  let n = prompt("Name", data[i].name);
+  let l = prompt("Link", data[i].link);
+  let u = prompt("User", data[i].user);
 
-  if(n && l){
-    projects[i] = {name:n, link:l};
-    saveProjects(projects);
+  if(n && l && u){
+    data[i] = {name:n, link:l, user:u};
+    save(data);
     render();
   }
 }
 
-/* logout */
+/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
-  window.location.href = "index.html";
+  window.location.href="index.html";
 }
 
 render();
