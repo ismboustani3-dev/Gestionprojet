@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>projets</title>
+<title>Dashboard Level 3</title>
 
 <style>
 body{
@@ -90,6 +90,7 @@ button{
   background: rgba(17,24,39,0.6);
   padding:15px;
   border-radius:15px;
+  border:1px solid rgba(56,189,248,0.15);
 }
 
 /* TABLE */
@@ -112,12 +113,11 @@ a{
   text-decoration:none;
 }
 
-.delete,.edit{
+.delete{
+  color:#ef4444;
   cursor:pointer;
+  margin-left:5px;
 }
-
-.delete{color:#ef4444;}
-.edit{color:#facc15;}
 
 /* CHART */
 canvas{
@@ -137,7 +137,7 @@ canvas{
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 SaaS Dashboard</h3>
+    <h3>📊 Dashboard</h3>
   </div>
 
   <!-- STATS -->
@@ -183,7 +183,7 @@ function add(){
   let name=document.getElementById("name").value;
   let link=document.getElementById("link").value;
 
-  if(!user||!name||!link) return;
+  if(!user||!name||!link) return alert("fill all");
 
   if(!link.startsWith("http")) link="https://"+link;
 
@@ -192,9 +192,18 @@ function add(){
   render();
 }
 
-/* DELETE */
+/* DELETE PROJECT */
 function del(id){
   let d=getData().filter(x=>x.id!==id);
+  save(d);
+  render();
+}
+
+/* DELETE USER */
+function deleteUser(user){
+  if(!confirm("Delete user " + user + " ?")) return;
+
+  let d=getData().filter(x=>x.user!==user);
   save(d);
   render();
 }
@@ -260,18 +269,38 @@ function render(){
           ${p.name}
           <div style="font-size:11px;opacity:0.6">${p.link}</div>
         </td>
-        <td><a href="${p.link}" target="_blank">open</a></td>
-        <td><span class="delete" onclick="del(${p.id})">del</span></td>
+
+        <td>
+          <a href="${p.link}" target="_blank">open</a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="del(${p.id})">del</span>
+        </td>
       </tr>
     `).join("");
 
     box.innerHTML+=`
       <div class="card">
-        <h3>👤 ${u}</h3>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>👤 ${u}</h3>
+
+          <!-- ✅ DELETE USER BUTTON -->
+          <button onclick="deleteUser('${u}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
+            Delete User
+          </button>
+        </div>
+
+        <div style="font-size:12px;opacity:0.6;margin-bottom:8px;">
+          📁 ${grouped[u].length} projects
+        </div>
+
         <table>
           <tr><th>Project</th><th>Link</th><th></th></tr>
           ${rows}
         </table>
+
       </div>
     `;
   }
