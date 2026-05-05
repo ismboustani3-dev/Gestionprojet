@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Projects Dashboard</title>
 
 <style>
 body{
@@ -70,7 +70,7 @@ button{
   text-align:center;
 }
 
-/* cards */
+/* card */
 .card{
   background:#1e293b;
   padding:12px;
@@ -78,7 +78,7 @@ button{
   border-radius:10px;
 }
 
-/* small buttons */
+/* btn */
 .btn{
   margin-top:10px;
   padding:5px 10px;
@@ -162,7 +162,7 @@ function getUsers(data){
   return [...new Set(data.map(p => p.user))];
 }
 
-/* GLOBAL filtered */
+/* GLOBAL */
 let filteredData = [];
 
 /* RENDER */
@@ -190,14 +190,10 @@ function render(){
     `;
   });
 
-  updateStats(data);
-  updateFilter(data);
-}
-
-/* STATS */
-function updateStats(data){
   document.getElementById("totalProjects").innerText = data.length;
   document.getElementById("totalUsers").innerText = getUsers(data).length;
+
+  updateFilter(data);
 }
 
 /* FILTER */
@@ -212,7 +208,7 @@ function updateFilter(data){
   });
 }
 
-/* ADD */
+/* ADD (FIX LINK BUG HERE) */
 function add(){
   let data = getData();
 
@@ -222,12 +218,17 @@ function add(){
 
   if(!name || !link || !user) return alert("Fill all fields");
 
+  // 🔥 FIX LINK
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
+
   data.push({name, link, user});
   save(data);
   render();
 }
 
-/* DELETE FIXED */
+/* DELETE */
 function del(i){
   let data = getData();
 
@@ -244,7 +245,7 @@ function del(i){
   render();
 }
 
-/* EDIT FIXED */
+/* EDIT */
 function edit(i){
   let data = getData();
 
@@ -261,6 +262,10 @@ function edit(i){
   let u = prompt("User", data[index].user);
 
   if(n && l && u){
+    if(!l.startsWith("http")){
+      l = "https://" + l;
+    }
+
     data[index] = {name:n, link:l, user:u};
     save(data);
     render();
