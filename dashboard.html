@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Level 3</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
@@ -20,6 +20,16 @@ body{
   background: rgba(17,24,39,0.8);
   backdrop-filter: blur(10px);
   padding:20px;
+  border-right:1px solid rgba(255,255,255,0.05);
+}
+
+.sidebar h2{
+  color:#38bdf8;
+}
+
+.sidebar p{
+  opacity:0.6;
+  font-size:13px;
 }
 
 /* MAIN */
@@ -36,11 +46,12 @@ body{
   padding:15px;
   background: rgba(17,24,39,0.6);
   border-radius:12px;
+  backdrop-filter: blur(10px);
 }
 
 /* INPUTS */
 input,button{
-  padding:10px;
+  padding:12px;
   margin:5px;
   border:none;
   border-radius:10px;
@@ -49,6 +60,12 @@ input,button{
 input{
   background:#111827;
   color:white;
+  outline:none;
+}
+
+input:focus{
+  box-shadow:0 0 10px #38bdf8;
+  transform:scale(1.03);
 }
 
 button{
@@ -57,24 +74,21 @@ button{
   cursor:pointer;
 }
 
-/* SEARCH */
-.search{
-  width:100%;
-  margin:10px 0;
-}
-
 /* STATS */
 .stats{
   display:flex;
   gap:10px;
   margin:15px 0;
+  flex-wrap:wrap;
 }
 
 .stat{
   flex:1;
+  min-width:160px;
   padding:12px;
   border-radius:12px;
   background: rgba(17,24,39,0.7);
+  border:1px solid rgba(56,189,248,0.15);
   color:#38bdf8;
 }
 
@@ -91,6 +105,11 @@ button{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(56,189,248,0.15);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
 }
 
 /* TABLE */
@@ -108,22 +127,25 @@ th{
   color:#38bdf8;
 }
 
+/* LINK STYLE */
 a{
   color:#38bdf8;
   text-decoration:none;
 }
 
+a:hover{
+  text-decoration:underline;
+}
+
 .delete{
   color:#ef4444;
   cursor:pointer;
-  margin-left:5px;
 }
 
-/* CHART */
-canvas{
-  background: rgba(17,24,39,0.6);
-  border-radius:12px;
-  margin-top:10px;
+.userHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 </style>
 </head>
@@ -131,19 +153,21 @@ canvas{
 <body>
 
 <div class="sidebar">
-  <h2>⚡ Level 3</h2>
+  <h2>⚡ Dashboard</h2>
+  <p>Projects Manager</p>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Dashboard</h3>
+    <h3>📊 Welcome <span id="username"></span></h3>
+    <button onclick="logout()">Logout</button>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users: <span id="u">0</span></div>
-    <div class="stat">📁 Projects: <span id="p">0</span></div>
+    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
   </div>
 
   <!-- FORM -->
@@ -154,12 +178,6 @@ canvas{
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- SEARCH -->
-  <input class="search" id="search" placeholder="🔍 search..." oninput="render()">
-
-  <!-- CHART -->
-  <canvas id="chart" width="400" height="120"></canvas>
-
   <!-- USERS -->
   <div id="users" class="users"></div>
 
@@ -167,137 +185,146 @@ canvas{
 
 <script>
 
+/* AUTH */
+if(localStorage.getItem("auth") !== "true"){
+  window.location.href = "index.html";
+}
+
+document.getElementById("username").innerText =
+localStorage.getItem("user") || "User";
+
+/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-function save(d){
-  localStorage.setItem("projects",JSON.stringify(d));
+function save(data){
+  localStorage.setItem("projects", JSON.stringify(data));
 }
 
 /* ADD */
 function add(){
-  let d=getData();
+  let data = getData();
 
-  let user=document.getElementById("user").value;
-  let name=document.getElementById("name").value;
-  let link=document.getElementById("link").value;
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
-  if(!user||!name||!link) return alert("fill all");
+  if(!user || !name || !link){
+    alert("Fill all fields");
+    return;
+  }
 
-  if(!link.startsWith("http")) link="https://"+link;
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
 
-  d.push({id:Date.now(),user,name,link});
-  save(d);
+  data.push({
+    id: Date.now(),
+    user,
+    name,
+    link
+  });
+
+  save(data);
+
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
+
   render();
 }
 
 /* DELETE PROJECT */
-function del(id){
-  let d=getData().filter(x=>x.id!==id);
-  save(d);
+function removeProject(id){
+  let data = getData().filter(p => p.id !== id);
+  save(data);
   render();
 }
 
 /* DELETE USER */
-function deleteUser(user){
+function removeUser(user){
   if(!confirm("Delete user " + user + " ?")) return;
 
-  let d=getData().filter(x=>x.user!==user);
-  save(d);
+  let data = getData().filter(p => p.user !== user);
+  save(data);
   render();
 }
 
-/* STATS */
-function stats(data){
-  document.getElementById("u").innerText =
-    new Set(data.map(x=>x.user)).size;
-
-  document.getElementById("p").innerText=data.length;
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
 }
 
-/* CHART */
-function drawChart(data){
-  let c=document.getElementById("chart");
-  let ctx=c.getContext("2d");
+/* STATS */
+function updateStats(){
+  let data = getData();
 
-  ctx.clearRect(0,0,c.width,c.height);
+  document.getElementById("totalUsers").innerText =
+    new Set(data.map(p=>p.user)).size;
 
-  let map={};
-  data.forEach(x=>{
-    map[x.user]=(map[x.user]||0)+1;
-  });
-
-  let keys=Object.keys(map);
-  let max=Math.max(...Object.values(map),1);
-
-  keys.forEach((k,i)=>{
-    let h=(map[k]/max)*100;
-
-    ctx.fillStyle="#38bdf8";
-    ctx.fillRect(i*60,110-h,40,h);
-
-    ctx.fillStyle="white";
-    ctx.fillText(k,i*60,115);
-  });
+  document.getElementById("totalProjects").innerText =
+    data.length;
 }
 
 /* RENDER */
 function render(){
-  let data=getData();
-  let q=document.getElementById("search").value?.toLowerCase()||"";
+  let data = getData();
+  let container = document.getElementById("users");
 
-  let f=data.filter(x=>
-    x.user.toLowerCase().includes(q) ||
-    x.name.toLowerCase().includes(q)
-  );
+  container.innerHTML = "";
 
-  let box=document.getElementById("users");
-  box.innerHTML="";
+  if(data.length === 0){
+    container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects 😴</p>`;
+    updateStats();
+    return;
+  }
 
-  let grouped={};
-  f.forEach(x=>{
-    if(!grouped[x.user]) grouped[x.user]=[];
-    grouped[x.user].push(x);
+  let grouped = {};
+
+  data.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user] = [];
+    grouped[p.user].push(p);
   });
 
-  for(let u in grouped){
+  for(let user in grouped){
 
-    let rows=grouped[u].map(p=>`
+    let projects = grouped[user];
+
+    let rows = projects.map(p=>`
       <tr>
+        <td>${p.name}</td>
+
+        <!-- ✅ LINK FIX (REAL CLICKABLE LINK) -->
         <td>
-          ${p.name}
-          <div style="font-size:11px;opacity:0.6">${p.link}</div>
+          <a href="${p.link}" target="_blank">
+            ${p.link}
+          </a>
         </td>
 
         <td>
-          <a href="${p.link}" target="_blank">open</a>
-        </td>
-
-        <td>
-          <span class="delete" onclick="del(${p.id})">del</span>
+          <span class="delete" onclick="removeProject(${p.id})">delete</span>
         </td>
       </tr>
     `).join("");
 
-    box.innerHTML+=`
+    container.innerHTML += `
       <div class="card">
 
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3>👤 ${u}</h3>
-
-          <!-- ✅ DELETE USER BUTTON -->
-          <button onclick="deleteUser('${u}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
+        <div class="userHeader">
+          <h3>👤 ${user}</h3>
+          <button onclick="removeUser('${user}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
             Delete User
           </button>
         </div>
 
-        <div style="font-size:12px;opacity:0.6;margin-bottom:8px;">
-          📁 ${grouped[u].length} projects
-        </div>
-
         <table>
-          <tr><th>Project</th><th>Link</th><th></th></tr>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
           ${rows}
         </table>
 
@@ -305,8 +332,7 @@ function render(){
     `;
   }
 
-  stats(data);
-  drawChart(data);
+  updateStats();
 }
 
 render();
