@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Modern Dashboard</title>
+<title>Dashboard</title>
 
 <style>
 body {
@@ -17,15 +17,12 @@ body {
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: rgba(17,24,39,0.9);
-  backdrop-filter: blur(10px);
+  background: #111827;
   padding: 20px;
-  border-right: 1px solid #1f2937;
 }
 
 .sidebar h2 {
-  font-size: 18px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .sidebar a {
@@ -33,23 +30,40 @@ body {
   color: #94a3b8;
   text-decoration: none;
   margin: 12px 0;
-  transition: 0.2s;
+  cursor: pointer;
 }
 
 .sidebar a:hover {
   color: white;
-  transform: translateX(5px);
 }
 
 /* Main */
 .main {
   flex: 1;
-  padding: 30px;
+  padding: 25px;
 }
 
-/* Header */
-h2 {
-  font-size: 24px;
+/* Pages */
+.page {
+  display: none;
+}
+
+.active {
+  display: block;
+}
+
+/* Cards stats */
+.stats {
+  display: flex;
+  gap: 15px;
+}
+
+.stat {
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  flex: 1;
+  text-align: center;
 }
 
 /* Inputs */
@@ -58,7 +72,6 @@ input {
   margin: 5px;
   border-radius: 10px;
   border: none;
-  outline: none;
   background: #111827;
   color: white;
 }
@@ -68,90 +81,92 @@ button {
   padding: 10px 14px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg,#38bdf8,#6366f1);
-  color: white;
+  background: #38bdf8;
   cursor: pointer;
-  transition: 0.2s;
 }
 
-button:hover {
-  transform: scale(1.05);
-}
-
-/* Grid */
-#list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
-}
-
-/* Card */
+/* Project cards */
 .card {
-  background: rgba(31,41,55,0.8);
-  backdrop-filter: blur(10px);
+  background: #1e293b;
   padding: 15px;
-  border-radius: 16px;
-  border: 1px solid #1f2937;
-  transition: 0.3s;
+  margin-top: 10px;
+  border-radius: 12px;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  border-color: #38bdf8;
-}
-
-/* Links */
-.card a {
-  color: #38bdf8;
-  font-size: 13px;
-  word-break: break-all;
-}
-
-/* Small buttons */
 .btn {
   margin-top: 10px;
   padding: 6px 10px;
   font-size: 12px;
-  border-radius: 8px;
-  background: #22c55e;
-  color: black;
 }
 
-.btn.delete {
+.btn.del {
   background: #ef4444;
+  color: white;
 }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>🚀 Dashboard</h2>
-  <a href="#">Home</a>
-  <a href="#">Projects</a>
-  <a href="#">Settings</a>
+  <a onclick="showPage('home')">Home</a>
+  <a onclick="showPage('projects')">Projects</a>
+  <a onclick="showPage('settings')">Settings</a>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
-<h2>My Projects</h2>
+<!-- HOME -->
+<div id="home" class="page active">
+  <h2>📊 Statistics</h2>
 
-<input id="name" placeholder="Project name">
-<input id="link" placeholder="Project link">
-<button onclick="addProject()">Add Project</button>
+  <div class="stats">
+    <div class="stat">
+      <h3 id="countProjects">0</h3>
+      <p>Projects</p>
+    </div>
 
-<div id="list"></div>
+    <div class="stat">
+      <h3 id="countLinks">0</h3>
+      <p>Links</p>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECTS -->
+<div id="projects" class="page">
+
+  <h2>📂 Projects</h2>
+
+  <input id="name" placeholder="Project name">
+  <input id="link" placeholder="Project link">
+  <button onclick="addProject()">Add</button>
+
+  <div id="list"></div>
+</div>
+
+<!-- SETTINGS -->
+<div id="settings" class="page">
+  <h2>⚙️ Settings</h2>
+  <p>Coming soon...</p>
+</div>
 
 </div>
 
 <script>
-if(localStorage.getItem("auth") !== "true") {
-  window.location.href = "index.html";
-}
 
 let projects = JSON.parse(localStorage.getItem("projects")) || [];
 
+/* NAVIGATION */
+function showPage(page) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById(page).classList.add("active");
+}
+
+/* RENDER */
 function render() {
   const list = document.getElementById("list");
   list.innerHTML = "";
@@ -160,18 +175,22 @@ function render() {
     list.innerHTML += `
       <div class="card">
         <h3>${p.name}</h3>
-        <a href="${p.link}" target="_blank">${p.link}</a>
-        <br>
+        <a href="${p.link}" target="_blank">${p.link}</a><br>
 
         <button class="btn" onclick="editProject(${i})">Edit</button>
-        <button class="btn delete" onclick="deleteProject(${i})">Delete</button>
+        <button class="btn del" onclick="deleteProject(${i})">Delete</button>
       </div>
     `;
   });
 
+  // STATS
+  document.getElementById("countProjects").innerText = projects.length;
+  document.getElementById("countLinks").innerText = projects.length;
+
   localStorage.setItem("projects", JSON.stringify(projects));
 }
 
+/* ADD */
 function addProject() {
   const name = document.getElementById("name").value;
   const link = document.getElementById("link").value;
@@ -182,11 +201,13 @@ function addProject() {
   render();
 }
 
+/* DELETE */
 function deleteProject(i) {
   projects.splice(i, 1);
   render();
 }
 
+/* EDIT */
 function editProject(i) {
   const n = prompt("Name", projects[i].name);
   const l = prompt("Link", projects[i].link);
@@ -197,7 +218,9 @@ function editProject(i) {
   }
 }
 
+/* INIT */
 render();
+
 </script>
 
 </body>
