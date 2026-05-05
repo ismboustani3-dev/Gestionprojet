@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Dashboard</title>
 
 <style>
 body{
@@ -12,7 +12,7 @@ body{
   color:white;
 }
 
-/* TOP */
+/* TOP BAR */
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -264,11 +264,14 @@ function render(){
       <tr>
         <td>${p.user}</td>
         <td>${p.name}</td>
+
+        <!-- 🔥 REAL LINK DISPLAY -->
         <td>
           <a href="${p.link}" target="_blank">
-            🔗 Open Link
+            ${p.link}
           </a>
         </td>
+
         <td>
           <button class="edit" onclick="edit(${i})">Edit</button>
           <button class="del" onclick="del(${i})">Delete</button>
