@@ -23,14 +23,8 @@ body{
   border-right:1px solid rgba(255,255,255,0.05);
 }
 
-.sidebar h2{
-  color:#38bdf8;
-}
-
-.sidebar p{
-  opacity:0.6;
-  font-size:13px;
-}
+.sidebar h2{ color:#38bdf8; }
+.sidebar p{ opacity:0.6; font-size:13px; }
 
 /* MAIN */
 .main{
@@ -65,7 +59,6 @@ input{
 
 input:focus{
   box-shadow:0 0 10px #38bdf8;
-  transform:scale(1.03);
 }
 
 button{
@@ -74,21 +67,24 @@ button{
   cursor:pointer;
 }
 
+/* SEARCH */
+#search{
+  width:100%;
+  margin:10px 0;
+}
+
 /* STATS */
 .stats{
   display:flex;
   gap:10px;
   margin:15px 0;
-  flex-wrap:wrap;
 }
 
 .stat{
   flex:1;
-  min-width:160px;
   padding:12px;
   border-radius:12px;
   background: rgba(17,24,39,0.7);
-  border:1px solid rgba(56,189,248,0.15);
   color:#38bdf8;
 }
 
@@ -105,11 +101,6 @@ button{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(56,189,248,0.15);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-5px);
 }
 
 /* TABLE */
@@ -123,29 +114,21 @@ th,td{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-th{
-  color:#38bdf8;
-}
+th{ color:#38bdf8; }
 
-/* LINK STYLE */
 a{
   color:#38bdf8;
   text-decoration:none;
 }
 
-a:hover{
-  text-decoration:underline;
-}
+.delete{ color:#ef4444; cursor:pointer; margin-left:6px; }
+.edit{ color:#facc15; cursor:pointer; margin-left:6px; }
 
-.delete{
-  color:#ef4444;
-  cursor:pointer;
-}
-
-.userHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+/* CHART */
+canvas{
+  background: rgba(17,24,39,0.6);
+  border-radius:12px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -160,7 +143,7 @@ a:hover{
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Welcome <span id="username"></span></h3>
+    <h3>📊 Dashboard</h3>
     <button onclick="logout()">Logout</button>
   </div>
 
@@ -178,6 +161,12 @@ a:hover{
     <button onclick="add()">Add</button>
   </div>
 
+  <!-- SEARCH -->
+  <input id="search" placeholder="🔍 Search..." oninput="render()">
+
+  <!-- CHART -->
+  <canvas id="chart" width="400" height="120"></canvas>
+
   <!-- USERS -->
   <div id="users" class="users"></div>
 
@@ -189,9 +178,6 @@ a:hover{
 if(localStorage.getItem("auth") !== "true"){
   window.location.href = "index.html";
 }
-
-document.getElementById("username").innerText =
-localStorage.getItem("user") || "User";
 
 /* DATA */
 function getData(){
@@ -210,14 +196,9 @@ function add(){
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!user || !name || !link){
-    alert("Fill all fields");
-    return;
-  }
+  if(!user || !name || !link) return alert("Fill all");
 
-  if(!link.startsWith("http")){
-    link = "https://" + link;
-  }
+  if(!link.startsWith("http")) link = "https://" + link;
 
   data.push({
     id: Date.now(),
@@ -245,22 +226,31 @@ function removeProject(id){
 /* DELETE USER */
 function removeUser(user){
   if(!confirm("Delete user " + user + " ?")) return;
-
   let data = getData().filter(p => p.user !== user);
   save(data);
   render();
 }
 
-/* LOGOUT */
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
+/* EDIT */
+function editProject(id){
+  let data = getData();
+  let p = data.find(x => x.id === id);
+
+  let newName = prompt("Edit name:", p.name);
+  if(newName) p.name = newName;
+
+  let newLink = prompt("Edit link:", p.link);
+  if(newLink){
+    if(!newLink.startsWith("http")) newLink = "https://" + newLink;
+    p.link = newLink;
+  }
+
+  save(data);
+  render();
 }
 
 /* STATS */
-function updateStats(){
-  let data = getData();
-
+function updateStats(data){
   document.getElementById("totalUsers").innerText =
     new Set(data.map(p=>p.user)).size;
 
@@ -268,22 +258,57 @@ function updateStats(){
     data.length;
 }
 
+/* CHART */
+function drawChart(data){
+  let c = document.getElementById("chart");
+  let ctx = c.getContext("2d");
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let map = {};
+
+  data.forEach(p=>{
+    map[p.user] = (map[p.user] || 0) + 1;
+  });
+
+  let keys = Object.keys(map);
+  let max = Math.max(...Object.values(map), 1);
+
+  keys.forEach((k,i)=>{
+    let h = (map[k] / max) * 100;
+
+    ctx.fillStyle = "#38bdf8";
+    ctx.fillRect(i*60,110-h,40,h);
+
+    ctx.fillStyle = "white";
+    ctx.fillText(k, i*60, 115);
+  });
+}
+
 /* RENDER */
 function render(){
   let data = getData();
-  let container = document.getElementById("users");
 
+  let q = document.getElementById("search").value?.toLowerCase() || "";
+
+  let filtered = data.filter(p =>
+    p.user.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q)
+  );
+
+  let container = document.getElementById("users");
   container.innerHTML = "";
 
-  if(data.length === 0){
-    container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects 😴</p>`;
-    updateStats();
+  if(filtered.length === 0){
+    container.innerHTML = "<p>No data</p>";
+    updateStats(data);
+    drawChart(data);
     return;
   }
 
   let grouped = {};
 
-  data.forEach(p=>{
+  filtered.forEach(p=>{
     if(!grouped[p.user]) grouped[p.user] = [];
     grouped[p.user].push(p);
   });
@@ -294,17 +319,18 @@ function render(){
 
     let rows = projects.map(p=>`
       <tr>
-        <td>${p.name}</td>
-
-        <!-- ✅ LINK FIX (REAL CLICKABLE LINK) -->
         <td>
-          <a href="${p.link}" target="_blank">
-            ${p.link}
-          </a>
+          ${p.name}
+          <div style="font-size:11px;opacity:0.6">${p.link}</div>
         </td>
 
         <td>
-          <span class="delete" onclick="removeProject(${p.id})">delete</span>
+          <a href="${p.link}" target="_blank">open</a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="removeProject(${p.id})">del</span>
+          <span class="edit" onclick="editProject(${p.id})">edit</span>
         </td>
       </tr>
     `).join("");
@@ -312,19 +338,20 @@ function render(){
     container.innerHTML += `
       <div class="card">
 
-        <div class="userHeader">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
           <h3>👤 ${user}</h3>
+
           <button onclick="removeUser('${user}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
             Delete User
           </button>
         </div>
 
+        <div style="font-size:12px;opacity:0.6;margin-bottom:8px;">
+          📁 ${projects.length} projects
+        </div>
+
         <table>
-          <tr>
-            <th>Project</th>
-            <th>Link</th>
-            <th>Action</th>
-          </tr>
+          <tr><th>Project</th><th>Link</th><th>Action</th></tr>
           ${rows}
         </table>
 
@@ -332,10 +359,16 @@ function render(){
     `;
   }
 
-  updateStats();
+  updateStats(data);
+  drawChart(data);
 }
 
 render();
+
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
 
 </script>
 
