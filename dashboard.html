@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>User Projects Dashboard</title>
 
 <style>
 *{
@@ -15,70 +15,25 @@ body{
   font-family:Arial;
   background:#0b1220;
   color:white;
-  display:flex;
 }
 
-/* SIDEBAR */
-.sidebar{
-  width:220px;
+/* TOP */
+.topbar{
+  padding:15px;
   background:#111827;
-  height:100vh;
+  text-align:center;
+}
+
+/* CONTAINER */
+.container{
   padding:20px;
 }
 
-.sidebar h2{
+/* INPUT AREA */
+.form{
   margin-bottom:20px;
 }
 
-.sidebar a{
-  display:block;
-  padding:10px;
-  margin-bottom:10px;
-  color:#38bdf8;
-  text-decoration:none;
-  border-radius:8px;
-}
-
-.sidebar a:hover{
-  background:#1e293b;
-}
-
-/* MAIN */
-.main{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-}
-
-/* TOPBAR */
-.topbar{
-  padding:15px 20px;
-  background:#111827;
-  display:flex;
-  justify-content:space-between;
-}
-
-/* CONTENT */
-.content{
-  padding:20px;
-}
-
-/* GRID */
-.grid{
-  display:grid;
-  grid-template-columns: 2fr 1fr;
-  gap:15px;
-  margin-bottom:15px;
-}
-
-/* CARD */
-.card{
-  background:#111827;
-  padding:15px;
-  border-radius:12px;
-}
-
-/* INPUT */
 input{
   padding:10px;
   margin:5px;
@@ -88,37 +43,38 @@ input{
   color:white;
 }
 
-/* BUTTON */
 button{
-  padding:10px;
+  padding:10px 14px;
   border:none;
   border-radius:8px;
   background:#38bdf8;
   cursor:pointer;
 }
 
-/* STATS */
-.stats{
-  display:flex;
-  gap:10px;
+/* USERS GRID */
+.users{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:15px;
 }
 
-.stat{
-  flex:1;
-  background:#1e293b;
+/* USER CARD */
+.card{
+  background:#111827;
   padding:15px;
-  border-radius:10px;
-  text-align:center;
+  border-radius:12px;
 }
 
-/* USER STATS */
-.userStat{
-  background:#0f172a;
-  padding:8px;
-  border-radius:8px;
-  margin-top:5px;
-  display:flex;
-  justify-content:space-between;
+/* TITLE */
+.card h3{
+  margin-bottom:5px;
+}
+
+/* SMALL TEXT */
+.small{
+  font-size:12px;
+  opacity:0.7;
+  margin-bottom:10px;
 }
 
 /* TABLE */
@@ -127,122 +83,56 @@ table{
   border-collapse:collapse;
 }
 
-th, td{
-  padding:10px;
+th,td{
+  padding:8px;
   border-bottom:1px solid #2d3748;
+  text-align:left;
 }
 
 th{
   color:#38bdf8;
 }
 
-/* ACTION */
-.edit{background:#22c55e;}
-.del{background:#ef4444;}
-
-/* MOBILE */
-@media(max-width:900px){
-  .sidebar{display:none;}
-  .grid{grid-template-columns:1fr;}
+a{
+  color:#38bdf8;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>📊 Panel</h2>
-  <a href="#">Dashboard</a>
-  <a href="#">Projects</a>
+<div class="topbar">
+  <h2>📊 Projects by User</h2>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<div class="container">
 
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <h3>Dashboard</h3>
-    <button onclick="logout()" style="background:#ef4444;">Logout</button>
+  <!-- ADD FORM -->
+  <div class="form">
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
+    <button onclick="add()">Add</button>
   </div>
 
-  <!-- CONTENT -->
-  <div class="content">
-
-    <!-- GRID -->
-    <div class="grid">
-
-      <!-- ADD -->
-      <div class="card">
-        <h3>Add Project</h3>
-        <input id="user" placeholder="Username">
-        <input id="name" placeholder="Project">
-        <input id="link" placeholder="Link">
-        <button onclick="add()">Add</button>
-      </div>
-
-      <!-- STATS -->
-      <div class="card">
-        <h3>Stats</h3>
-
-        <div class="stats">
-          <div class="stat">
-            <h2 id="totalProjects">0</h2>
-            <p>Projects</p>
-          </div>
-
-          <div class="stat">
-            <h2 id="totalUsers">0</h2>
-            <p>Users</p>
-          </div>
-
-          <div class="stat">
-            <h2 id="topUser">-</h2>
-            <p>Top User</p>
-          </div>
-        </div>
-
-        <!-- USERS LIST -->
-        <div id="usersList"></div>
-      </div>
-
-    </div>
-
-    <!-- SEARCH -->
-    <div class="card">
-      🔍 <input id="search" oninput="render()" placeholder="Search">
-    </div>
-
-    <!-- TABLE -->
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Project</th>
-            <th>Link</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="table"></tbody>
-      </table>
-    </div>
-
-  </div>
+  <!-- USERS -->
+  <div id="users" class="users"></div>
 
 </div>
 
 <script>
 
+/* GET DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
+/* SAVE DATA */
 function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
 
-/* ADD */
+/* ADD PROJECT */
 function add(){
   let data = getData();
 
@@ -250,7 +140,9 @@ function add(){
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!user || !name || !link) return alert("Fill all");
+  if(!user || !name || !link){
+    return alert("Fill all fields");
+  }
 
   if(!link.startsWith("http")){
     link = "https://" + link;
@@ -259,105 +151,62 @@ function add(){
   data.push({user,name,link});
   save(data);
 
-  user.value="";
-  name.value="";
-  link.value="";
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
 
   render();
 }
 
-/* DELETE */
-function del(i){
-  let d = getData();
-  d.splice(i,1);
-  save(d);
-  render();
-}
-
-/* EDIT */
-function edit(i){
-  let d = getData();
-
-  let u = prompt("User", d[i].user);
-  let n = prompt("Project", d[i].name);
-  let l = prompt("Link", d[i].link);
-
-  if(u && n && l){
-    if(!l.startsWith("http")){
-      l = "https://" + l;
-    }
-    d[i]={user:u,name:n,link:l};
-    save(d);
-    render();
-  }
-}
-
-/* RENDER */
+/* RENDER USERS GROUPED */
 function render(){
-  let d = getData();
-  let s = document.getElementById("search").value.toLowerCase();
 
-  let table = document.getElementById("table");
-  table.innerHTML = "";
+  let data = getData();
+  let container = document.getElementById("users");
 
-  let filtered = d.filter(x=>x.user.toLowerCase().includes(s));
+  container.innerHTML = "";
 
-  /* STATS */
-  document.getElementById("totalProjects").innerText = d.length;
-  document.getElementById("totalUsers").innerText =
-    [...new Set(d.map(x=>x.user))].length;
+  // group by user
+  let grouped = {};
 
-  /* USER COUNT */
-  let usersCount = {};
-  d.forEach(p=>{
-    usersCount[p.user] = (usersCount[p.user] || 0) + 1;
+  data.forEach(p=>{
+    if(!grouped[p.user]){
+      grouped[p.user] = [];
+    }
+    grouped[p.user].push(p);
   });
 
-  /* TOP USER 👑 */
-  let topUser = "-";
-  let max = 0;
+  // create cards
+  for(let user in grouped){
 
-  for(let u in usersCount){
-    if(usersCount[u] > max){
-      max = usersCount[u];
-      topUser = u;
-    }
-  }
+    let projects = grouped[user];
 
-  document.getElementById("topUser").innerText = topUser;
+    let rows = projects.map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        <td><a href="${p.link}" target="_blank">open</a></td>
+      </tr>
+    `).join("");
 
-  /* USERS LIST */
-  let usersList = document.getElementById("usersList");
-  usersList.innerHTML = "";
+    container.innerHTML += `
+      <div class="card">
+        <h3>👤 ${user}</h3>
+        <div class="small">${projects.length} projects</div>
 
-  for(let u in usersCount){
-    usersList.innerHTML += `
-      <div class="userStat">
-        <span>${u}</span>
-        <span>${usersCount[u]} projects</span>
+        <table>
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
       </div>
     `;
   }
-
-  /* TABLE */
-  filtered.forEach((p,i)=>{
-    table.innerHTML += `
-    <tr>
-      <td>${p.user}</td>
-      <td>${p.name}</td>
-      <td><a href="${p.link}" target="_blank">${p.link}</a></td>
-      <td>
-        <button class="edit" onclick="edit(${i})">Edit</button>
-        <button class="del" onclick="del(${i})">Delete</button>
-      </td>
-    </tr>`;
-  });
-}
-
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("user");
-  location="index.html";
 }
 
 render();
