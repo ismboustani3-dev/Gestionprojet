@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Pro Dashboard</title>
 
 <style>
 body{
@@ -13,7 +13,6 @@ body{
   display:flex;
 }
 
-/* Sidebar */
 .sidebar{
   width:220px;
   background:#111827;
@@ -21,26 +20,31 @@ body{
   padding:20px;
 }
 
-.sidebar h3{
-  margin-bottom:15px;
-}
-
-.sidebar select{
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1e293b;
-  color:white;
-}
-
-/* Main */
 .main{
   flex:1;
   padding:20px;
 }
 
-/* Stats */
+/* inputs */
+input, select{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#111827;
+  color:white;
+}
+
+/* button */
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  cursor:pointer;
+}
+
+/* stats */
 .stats{
   display:flex;
   gap:15px;
@@ -55,11 +59,7 @@ body{
   text-align:center;
 }
 
-.stat h2{
-  margin:0;
-}
-
-/* Card */
+/* cards */
 .card{
   background:#1e293b;
   padding:12px;
@@ -67,11 +67,6 @@ body{
   border-radius:10px;
 }
 
-a{
-  color:#38bdf8;
-}
-
-/* Buttons */
 .btn{
   margin-top:10px;
   padding:5px 10px;
@@ -84,21 +79,24 @@ a{
   background:#ef4444;
   color:white;
 }
+
+.edit{
+  background:#22c55e;
+}
 </style>
 </head>
 
 <body>
 
 <script>
-let currentUser = localStorage.getItem("user");
-if(!currentUser){
+if(!localStorage.getItem("user")){
   window.location.href="index.html";
 }
 </script>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h3>👤 Users</h3>
+  <h3>👤 Users Filter</h3>
   <select id="filter" onchange="render()">
     <option value="all">All Users</option>
   </select>
@@ -122,6 +120,13 @@ if(!currentUser){
   </div>
 </div>
 
+<!-- ADD -->
+<h3>➕ Add Project</h3>
+<input id="name" placeholder="Project name">
+<input id="link" placeholder="Project link">
+<input id="user" placeholder="User name">
+<button onclick="add()">Add</button>
+
 <!-- LIST -->
 <div id="list"></div>
 
@@ -138,9 +143,9 @@ function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
 
-/* USERS LIST */
+/* USERS */
 function getUsers(data){
-  return [...new Set(data.map(p => p.user))];
+  return [...new Set(data.map(p=>p.user))];
 }
 
 /* RENDER */
@@ -160,7 +165,10 @@ function render(){
       <div class="card">
         <h3>${p.name}</h3>
         <p>👤 ${p.user}</p>
-        <a href="${p.link}" target="_blank">${p.link}</a>
+        <a href="${p.link}" target="_blank">${p.link}</a><br>
+
+        <button class="btn edit" onclick="edit(${i})">Edit</button>
+        <button class="btn del" onclick="del(${i})">Delete</button>
       </div>
     `;
   });
@@ -174,10 +182,47 @@ function render(){
   let select = document.getElementById("filter");
 
   select.innerHTML = `<option value="all">All Users</option>`;
-
   users.forEach(u=>{
     select.innerHTML += `<option value="${u}">${u}</option>`;
   });
+}
+
+/* ADD */
+function add(){
+  let data = getData();
+
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
+  let user = document.getElementById("user").value;
+
+  if(!name || !link || !user) return alert("Fill all fields");
+
+  data.push({name, link, user});
+  save(data);
+  render();
+}
+
+/* DELETE */
+function del(i){
+  let data = getData();
+  data.splice(i,1);
+  save(data);
+  render();
+}
+
+/* EDIT */
+function edit(i){
+  let data = getData();
+
+  let n = prompt("Name", data[i].name);
+  let l = prompt("Link", data[i].link);
+  let u = prompt("User", data[i].user);
+
+  if(n && l && u){
+    data[i] = {name:n, link:l, user:u};
+    save(data);
+    render();
+  }
 }
 
 render();
