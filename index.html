@@ -41,14 +41,6 @@ button{
   background:#38bdf8;
   cursor:pointer;
 }
-
-.switch{
-  text-align:center;
-  margin-top:10px;
-  font-size:12px;
-  opacity:0.7;
-  cursor:pointer;
-}
 </style>
 </head>
 
@@ -56,78 +48,60 @@ button{
 
 <div class="box">
 
-  <h2 id="title">Login 🔐</h2>
+  <h2>Login 🔐</h2>
 
   <input id="user" placeholder="Username">
   <input id="pass" type="password" placeholder="Password">
 
-  <button onclick="action()">Continue</button>
-
-  <div class="switch" onclick="toggle()">
-    Switch mode
-  </div>
+  <button onclick="login()">Login</button>
 
 </div>
 
 <script>
 
-let mode = "login";
-
-/* SWITCH */
-function toggle(){
-  mode = (mode === "login") ? "register" : "login";
-  document.getElementById("title").innerText =
-    mode === "login" ? "Login 🔐" : "Register 🆕";
+/* INIT ADMIN FIRST TIME */
+if(!localStorage.getItem("users_init")){
+  let users = [
+    {user:"admin", pass:"admin123", role:"admin"}
+  ];
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("users_init","true");
 }
 
-/* USERS */
+/* GET USERS */
 function getUsers(){
   return JSON.parse(localStorage.getItem("users")) || [];
 }
 
-/* MAIN */
-function action(){
+/* LOGIN */
+function login(){
 
   let user = document.getElementById("user").value.trim();
   let pass = document.getElementById("pass").value.trim();
 
   if(!user || !pass){
-    alert("Fill all fields");
+    alert("fill all");
     return;
   }
 
   let users = getUsers();
 
-  /* REGISTER */
-  if(mode === "register"){
-
-    let exists = users.find(u => u.user === user);
-
-    if(exists){
-      alert("User already exists");
-      return;
-    }
-
-    users.push({user, pass});
-    localStorage.setItem("users", JSON.stringify(users));
-
-    alert("Account created!");
-    toggle();
-    return;
-  }
-
-  /* LOGIN */
   let found = users.find(u => u.user === user && u.pass === pass);
 
   if(!found){
-    alert("Wrong credentials");
+    alert("wrong login");
     return;
   }
 
   localStorage.setItem("auth","true");
-  localStorage.setItem("user",user);
+  localStorage.setItem("user", user);
+  localStorage.setItem("role", found.role);
 
-  window.location.href = "dashboard.html";
+  if(found.role === "admin"){
+    location.href="admin.html";
+  } else {
+    location.href="dashboard.html";
+  }
 }
 
 </script>
