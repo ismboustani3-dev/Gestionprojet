@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Grouped Dashboard</title>
+<title>Dashboard Table</title>
 
 <style>
 body{
@@ -30,46 +30,42 @@ button{
   cursor:pointer;
 }
 
-/* USER BOX */
-.userBox{
-  background:#111827;
-  margin-top:20px;
-  padding:15px;
-  border-radius:12px;
-}
-
 /* TABLE */
 table{
   width:100%;
-  margin-top:10px;
+  margin-top:20px;
   border-collapse:collapse;
+  background:#111827;
+  border-radius:10px;
+  overflow:hidden;
 }
 
 th, td{
-  padding:10px;
+  padding:12px;
   border-bottom:1px solid #2d3748;
+  text-align:left;
 }
 
 th{
-  text-align:left;
+  background:#1e293b;
   color:#38bdf8;
 }
 
 /* buttons */
-.del{
-  background:#ef4444;
+.edit{
+  background:#22c55e;
   color:white;
-  padding:5px 8px;
   border:none;
+  padding:5px 8px;
   border-radius:6px;
   cursor:pointer;
 }
 
-.edit{
-  background:#22c55e;
+.del{
+  background:#ef4444;
   color:white;
-  padding:5px 8px;
   border:none;
+  padding:5px 8px;
   border-radius:6px;
   cursor:pointer;
 }
@@ -78,7 +74,7 @@ th{
 
 <body>
 
-<h2>📊 Projects Table (Grouped by User)</h2>
+<h2>📊 Projects Table</h2>
 
 <!-- ADD -->
 <input id="user" placeholder="Username">
@@ -86,8 +82,19 @@ th{
 <input id="link" placeholder="Project link">
 <button onclick="add()">Add</button>
 
-<!-- RESULT -->
-<div id="container"></div>
+<!-- TABLE -->
+<table>
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Project Name</th>
+      <th>Link</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody id="tableBody"></tbody>
+</table>
 
 <script>
 
@@ -112,6 +119,7 @@ function add(){
     return alert("Fill all fields");
   }
 
+  // fix link
   if(!link.startsWith("http")){
     link = "https://" + link;
   }
@@ -122,39 +130,20 @@ function add(){
 }
 
 /* DELETE */
-function del(index, userName){
+function del(index){
   let data = getData();
-
-  let filtered = data.filter(p => p.user === userName);
-  let item = filtered[index];
-
-  let realIndex = data.findIndex(p =>
-    p.user === item.user &&
-    p.name === item.name &&
-    p.link === item.link
-  );
-
-  data.splice(realIndex,1);
+  data.splice(index,1);
   save(data);
   render();
 }
 
 /* EDIT */
-function edit(index, userName){
+function edit(index){
   let data = getData();
 
-  let filtered = data.filter(p => p.user === userName);
-  let item = filtered[index];
-
-  let realIndex = data.findIndex(p =>
-    p.user === item.user &&
-    p.name === item.name &&
-    p.link === item.link
-  );
-
-  let u = prompt("Username", data[realIndex].user);
-  let n = prompt("Project name", data[realIndex].name);
-  let l = prompt("Link", data[realIndex].link);
+  let u = prompt("Username", data[index].user);
+  let n = prompt("Project name", data[index].name);
+  let l = prompt("Link", data[index].link);
 
   if(u && n && l){
 
@@ -162,53 +151,31 @@ function edit(index, userName){
       l = "https://" + l;
     }
 
-    data[realIndex] = {user:u, name:n, link:l};
+    data[index] = {user:u, name:n, link:l};
     save(data);
     render();
   }
 }
 
-/* RENDER GROUPED TABLE */
+/* RENDER TABLE */
 function render(){
   let data = getData();
-  let container = document.getElementById("container");
+  let table = document.getElementById("tableBody");
 
-  container.innerHTML = "";
+  table.innerHTML = "";
 
-  let users = [...new Set(data.map(p => p.user))];
-
-  users.forEach(user => {
-
-    let userProjects = data.filter(p => p.user === user);
-
-    let html = `
-      <div class="userBox">
-        <h3>👤 ${user}</h3>
-
-        <table>
-          <tr>
-            <th>Project name</th>
-            <th>Link</th>
-            <th>Actions</th>
-          </tr>
+  data.forEach((p,i)=>{
+    table.innerHTML += `
+      <tr>
+        <td>${p.user}</td>
+        <td>${p.name}</td>
+        <td><a href="${p.link}" target="_blank">${p.link}</a></td>
+        <td>
+          <button class="edit" onclick="edit(${i})">Edit</button>
+          <button class="del" onclick="del(${i})">Delete</button>
+        </td>
+      </tr>
     `;
-
-    userProjects.forEach((p,i)=>{
-      html += `
-        <tr>
-          <td>${p.name}</td>
-          <td><a href="${p.link}" target="_blank">${p.link}</a></td>
-          <td>
-            <button class="edit" onclick="edit(${i}, '${user}')">Edit</button>
-            <button class="del" onclick="del(${i}, '${user}')">Delete</button>
-          </td>
-        </tr>
-      `;
-    });
-
-    html += `</table></div>`;
-
-    container.innerHTML += html;
   });
 }
 
