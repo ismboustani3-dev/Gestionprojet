@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pro Dashboard</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
@@ -13,20 +13,31 @@ body{
   display:flex;
 }
 
+/* sidebar */
 .sidebar{
   width:220px;
-  background:#111827;
   height:100vh;
+  background:#111827;
   padding:20px;
 }
 
+select{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#1e293b;
+  color:white;
+}
+
+/* main */
 .main{
   flex:1;
   padding:20px;
 }
 
 /* inputs */
-input, select{
+input{
   padding:10px;
   margin:5px;
   border:none;
@@ -67,6 +78,7 @@ button{
   border-radius:10px;
 }
 
+/* small buttons */
 .btn{
   margin-top:10px;
   padding:5px 10px;
@@ -96,7 +108,7 @@ if(!localStorage.getItem("user")){
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h3>👤 Users Filter</h3>
+  <h3>👤 Users</h3>
   <select id="filter" onchange="render()">
     <option value="all">All Users</option>
   </select>
@@ -122,9 +134,11 @@ if(!localStorage.getItem("user")){
 
 <!-- ADD -->
 <h3>➕ Add Project</h3>
+
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
 <input id="user" placeholder="User name">
+
 <button onclick="add()">Add</button>
 
 <!-- LIST -->
@@ -145,8 +159,11 @@ function save(data){
 
 /* USERS */
 function getUsers(data){
-  return [...new Set(data.map(p=>p.user))];
+  return [...new Set(data.map(p => p.user))];
 }
+
+/* GLOBAL filtered */
+let filteredData = [];
 
 /* RENDER */
 function render(){
@@ -156,11 +173,11 @@ function render(){
   let list = document.getElementById("list");
   list.innerHTML = "";
 
-  let filtered = filter === "all"
+  filteredData = filter === "all"
     ? data
     : data.filter(p => p.user === filter);
 
-  filtered.forEach((p,i)=>{
+  filteredData.forEach((p,i)=>{
     list.innerHTML += `
       <div class="card">
         <h3>${p.name}</h3>
@@ -173,15 +190,23 @@ function render(){
     `;
   });
 
-  /* STATS */
+  updateStats(data);
+  updateFilter(data);
+}
+
+/* STATS */
+function updateStats(data){
   document.getElementById("totalProjects").innerText = data.length;
   document.getElementById("totalUsers").innerText = getUsers(data).length;
+}
 
-  /* FILTER USERS */
+/* FILTER */
+function updateFilter(data){
   let users = getUsers(data);
   let select = document.getElementById("filter");
 
   select.innerHTML = `<option value="all">All Users</option>`;
+
   users.forEach(u=>{
     select.innerHTML += `<option value="${u}">${u}</option>`;
   });
@@ -202,24 +227,41 @@ function add(){
   render();
 }
 
-/* DELETE */
+/* DELETE FIXED */
 function del(i){
   let data = getData();
-  data.splice(i,1);
+
+  let item = filteredData[i];
+
+  let index = data.findIndex(p =>
+    p.name === item.name &&
+    p.link === item.link &&
+    p.user === item.user
+  );
+
+  data.splice(index,1);
   save(data);
   render();
 }
 
-/* EDIT */
+/* EDIT FIXED */
 function edit(i){
   let data = getData();
 
-  let n = prompt("Name", data[i].name);
-  let l = prompt("Link", data[i].link);
-  let u = prompt("User", data[i].user);
+  let item = filteredData[i];
+
+  let index = data.findIndex(p =>
+    p.name === item.name &&
+    p.link === item.link &&
+    p.user === item.user
+  );
+
+  let n = prompt("Name", data[index].name);
+  let l = prompt("Link", data[index].link);
+  let u = prompt("User", data[index].user);
 
   if(n && l && u){
-    data[i] = {name:n, link:l, user:u};
+    data[index] = {name:n, link:l, user:u};
     save(data);
     render();
   }
