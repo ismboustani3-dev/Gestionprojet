@@ -57,14 +57,14 @@ button{
 
 <script>
 function login(){
-  const user = document.getElementById("user").value;
-  const pass = document.getElementById("pass").value;
+  let user = document.getElementById("user").value;
+  let pass = document.getElementById("pass").value;
 
   if(user && pass){
     localStorage.setItem("user", user);
     window.location.href = "dashboard.html";
   } else {
-    alert("Fill fields ❌");
+    alert("Fill all fields");
   }
 }
 </script>
