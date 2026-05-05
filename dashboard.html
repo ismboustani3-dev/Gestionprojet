@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate Dashboard</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
@@ -23,6 +23,15 @@ body{
   border-right:1px solid rgba(255,255,255,0.05);
 }
 
+.sidebar h2{
+  color:#38bdf8;
+}
+
+.sidebar p{
+  opacity:0.6;
+  font-size:13px;
+}
+
 /* MAIN */
 .main{
   flex:1;
@@ -40,11 +49,36 @@ body{
   backdrop-filter: blur(10px);
 }
 
+/* INPUTS */
+input,button{
+  padding:12px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+}
+
+input{
+  background:#111827;
+  color:white;
+  outline:none;
+}
+
+input:focus{
+  box-shadow:0 0 10px #38bdf8;
+  transform:scale(1.03);
+}
+
+button{
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+  color:white;
+  cursor:pointer;
+}
+
 /* STATS */
 .stats{
   display:flex;
   gap:10px;
-  margin-top:15px;
+  margin:15px 0;
   flex-wrap:wrap;
 }
 
@@ -58,38 +92,11 @@ body{
   color:#38bdf8;
 }
 
-/* INPUTS */
-input,button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:10px;
-}
-
-input{
-  background:#111827;
-  color:white;
-  outline:none;
-}
-
-button{
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-  color:white;
-  cursor:pointer;
-}
-
-/* SEARCH */
-.search{
-  width:100%;
-  margin:10px 0;
-}
-
 /* GRID */
 .users{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:15px;
-  margin-top:15px;
 }
 
 /* CARD */
@@ -98,6 +105,11 @@ button{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(56,189,248,0.15);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
 }
 
 /* TABLE */
@@ -115,22 +127,25 @@ th{
   color:#38bdf8;
 }
 
+/* LINK STYLE */
+a{
+  color:#38bdf8;
+  text-decoration:none;
+}
+
+a:hover{
+  text-decoration:underline;
+}
+
 .delete{
   color:#ef4444;
   cursor:pointer;
 }
 
-.edit{
-  color:#facc15;
-  cursor:pointer;
-  margin-left:8px;
-}
-
-canvas{
-  background: rgba(17,24,39,0.6);
-  border-radius:12px;
-  margin-top:15px;
-  padding:10px;
+.userHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 </style>
 </head>
@@ -138,21 +153,21 @@ canvas{
 <body>
 
 <div class="sidebar">
-  <h2>⚡ Ultimate</h2>
-  <p>Dashboard Pro</p>
+  <h2>⚡ Dashboard</h2>
+  <p>Projects Manager</p>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Dashboard</h3>
+    <h3>📊 Welcome <span id="username"></span></h3>
     <button onclick="logout()">Logout</button>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users: <span id="u">0</span></div>
-    <div class="stat">📁 Projects: <span id="p">0</span></div>
+    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
   </div>
 
   <!-- FORM -->
@@ -163,12 +178,6 @@ canvas{
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- SEARCH -->
-  <input class="search" id="search" placeholder="🔍 Search user or project..." oninput="render()">
-
-  <!-- CHART -->
-  <canvas id="chart" width="400" height="150"></canvas>
-
   <!-- USERS -->
   <div id="users" class="users"></div>
 
@@ -176,51 +185,69 @@ canvas{
 
 <script>
 
+/* AUTH */
 if(localStorage.getItem("auth") !== "true"){
-  window.location.href="index.html";
+  window.location.href = "index.html";
 }
 
+document.getElementById("username").innerText =
+localStorage.getItem("user") || "User";
+
+/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-function save(d){
-  localStorage.setItem("projects",JSON.stringify(d));
+function save(data){
+  localStorage.setItem("projects", JSON.stringify(data));
 }
 
 /* ADD */
 function add(){
-  let d = getData();
+  let data = getData();
 
-  let user=document.getElementById("user").value;
-  let name=document.getElementById("name").value;
-  let link=document.getElementById("link").value;
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
-  if(!user||!name||!link) return alert("fill all");
+  if(!user || !name || !link){
+    alert("Fill all fields");
+    return;
+  }
 
-  if(!link.startsWith("http")) link="https://"+link;
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
 
-  d.push({id:Date.now(),user,name,link});
-  save(d);
+  data.push({
+    id: Date.now(),
+    user,
+    name,
+    link
+  });
+
+  save(data);
+
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
+
   render();
 }
 
-/* DELETE */
-function del(id){
-  let d=getData().filter(x=>x.id!==id);
-  save(d);
+/* DELETE PROJECT */
+function removeProject(id){
+  let data = getData().filter(p => p.id !== id);
+  save(data);
   render();
 }
 
-/* EDIT */
-function edit(id){
-  let d=getData();
-  let p=d.find(x=>x.id===id);
+/* DELETE USER */
+function removeUser(user){
+  if(!confirm("Delete user " + user + " ?")) return;
 
-  let newName=prompt("new name",p.name);
-  if(newName) p.name=newName;
-
-  save(d);
+  let data = getData().filter(p => p.user !== user);
+  save(data);
   render();
 }
 
@@ -231,91 +258,81 @@ function logout(){
 }
 
 /* STATS */
-function stats(data){
-  let users=new Set(data.map(x=>x.user)).size;
-  document.getElementById("u").innerText=users;
-  document.getElementById("p").innerText=data.length;
-}
+function updateStats(){
+  let data = getData();
 
-/* CHART */
-function drawChart(data){
-  let c=document.getElementById("chart");
-  let ctx=c.getContext("2d");
+  document.getElementById("totalUsers").innerText =
+    new Set(data.map(p=>p.user)).size;
 
-  ctx.clearRect(0,0,c.width,c.height);
-
-  let grouped={};
-  data.forEach(x=>{
-    grouped[x.user]=(grouped[x.user]||0)+1;
-  });
-
-  let keys=Object.keys(grouped);
-  let max=Math.max(...Object.values(grouped),1);
-
-  keys.forEach((k,i)=>{
-    let h=(grouped[k]/max)*120;
-
-    ctx.fillStyle="#38bdf8";
-    ctx.fillRect(i*60,140-h,40,h);
-
-    ctx.fillStyle="white";
-    ctx.fillText(k, i*60,145);
-  });
+  document.getElementById("totalProjects").innerText =
+    data.length;
 }
 
 /* RENDER */
 function render(){
-  let data=getData();
-  let q=document.getElementById("search").value?.toLowerCase()||"";
+  let data = getData();
+  let container = document.getElementById("users");
 
-  let filtered=data.filter(x=>
-    x.user.toLowerCase().includes(q) ||
-    x.name.toLowerCase().includes(q)
-  );
+  container.innerHTML = "";
 
-  let box=document.getElementById("users");
-  box.innerHTML="";
-
-  if(filtered.length===0){
-    box.innerHTML="<p>No data</p>";
-    stats(data);
-    drawChart(data);
+  if(data.length === 0){
+    container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects 😴</p>`;
+    updateStats();
     return;
   }
 
-  let grouped={};
-  filtered.forEach(x=>{
-    if(!grouped[x.user]) grouped[x.user]=[];
-    grouped[x.user].push(x);
+  let grouped = {};
+
+  data.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user] = [];
+    grouped[p.user].push(p);
   });
 
-  for(let u in grouped){
+  for(let user in grouped){
 
-    let rows=grouped[u].map(p=>`
+    let projects = grouped[user];
+
+    let rows = projects.map(p=>`
       <tr>
         <td>${p.name}</td>
-        <td><a href="${p.link}" target="_blank">open</a></td>
+
+        <!-- ✅ LINK FIX (REAL CLICKABLE LINK) -->
         <td>
-          <span class="delete" onclick="del(${p.id})">del</span>
-          <span class="edit" onclick="edit(${p.id})">edit</span>
+          <a href="${p.link}" target="_blank">
+            ${p.link}
+          </a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="removeProject(${p.id})">delete</span>
         </td>
       </tr>
     `).join("");
 
-    box.innerHTML+=`
+    container.innerHTML += `
       <div class="card">
-        <h3>👤 ${u}</h3>
-        <p>📁 ${grouped[u].length} projects</p>
+
+        <div class="userHeader">
+          <h3>👤 ${user}</h3>
+          <button onclick="removeUser('${user}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
+            Delete User
+          </button>
+        </div>
+
         <table>
-          <tr><th>name</th><th>link</th><th></th></tr>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
           ${rows}
         </table>
+
       </div>
     `;
   }
 
-  stats(data);
-  drawChart(data);
+  updateStats();
 }
 
 render();
