@@ -29,9 +29,16 @@ body{
 
 /* CONTAINER */
 .container{
-  padding:15px 20px 20px;
+  padding:15px 20px;
   max-width:1200px;
   margin:auto;
+}
+
+/* ROW (ADD + STATS SIDE BY SIDE) */
+.row{
+  display:flex;
+  gap:15px;
+  margin-bottom:15px;
 }
 
 /* CARDS */
@@ -39,7 +46,7 @@ body{
   background:#111827;
   padding:15px;
   border-radius:12px;
-  margin-bottom:15px;
+  flex:1;
 }
 
 /* TITLES */
@@ -57,6 +64,7 @@ input{
   color:white;
 }
 
+/* BUTTON */
 button{
   padding:10px 14px;
   border:none;
@@ -69,14 +77,14 @@ button{
 /* STATS */
 .stats{
   display:flex;
-  gap:15px;
+  gap:10px;
 }
 
 .stat{
   flex:1;
   background:#1e293b;
   padding:15px;
-  border-radius:12px;
+  border-radius:10px;
   text-align:center;
 }
 
@@ -102,7 +110,7 @@ a{
   color:#38bdf8;
 }
 
-/* BUTTONS */
+/* ACTION BUTTONS */
 .edit{
   background:#22c55e;
   padding:5px 8px;
@@ -120,12 +128,19 @@ a{
   cursor:pointer;
   color:white;
 }
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .row{
+    flex-direction:column;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<!-- TOP -->
+<!-- TOPBAR -->
 <div class="topbar">
   <h3>📊 Dashboard</h3>
   <button onclick="logout()" style="background:#ef4444;">Logout</button>
@@ -133,31 +148,36 @@ a{
 
 <div class="container">
 
-<!-- ADD -->
-<div class="card">
-  <h3>➕ Add Project</h3>
+<!-- 🔥 ROW (ADD + STATS) -->
+<div class="row">
 
-  <input id="user" placeholder="Username">
-  <input id="name" placeholder="Project name">
-  <input id="link" placeholder="Project link">
-  <button onclick="add()">Add</button>
-</div>
+  <!-- ADD PROJECT -->
+  <div class="card">
+    <h3>➕ Add Project</h3>
 
-<!-- STATS -->
-<div class="card">
-  <h3>📊 Stats</h3>
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
+    <button onclick="add()">Add</button>
+  </div>
 
-  <div class="stats">
-    <div class="stat">
-      <h2 id="totalProjects">0</h2>
-      <p>Projects</p>
-    </div>
+  <!-- STATS -->
+  <div class="card">
+    <h3>📊 Stats</h3>
 
-    <div class="stat">
-      <h2 id="totalUsers">0</h2>
-      <p>Users</p>
+    <div class="stats">
+      <div class="stat">
+        <h2 id="totalProjects">0</h2>
+        <p>Projects</p>
+      </div>
+
+      <div class="stat">
+        <h2 id="totalUsers">0</h2>
+        <p>Users</p>
+      </div>
     </div>
   </div>
+
 </div>
 
 <!-- SEARCH -->
@@ -176,7 +196,6 @@ a{
         <th>Actions</th>
       </tr>
     </thead>
-
     <tbody id="table"></tbody>
   </table>
 </div>
