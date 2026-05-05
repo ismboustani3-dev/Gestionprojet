@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Login System</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background: radial-gradient(circle at top,#0f172a,#0b1220);
+  background:#0a0f1c;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -17,31 +17,37 @@ body{
 }
 
 .box{
-  background: rgba(30,41,59,0.7);
-  backdrop-filter: blur(10px);
-  padding:30px;
-  border-radius:15px;
-  width:320px;
-  border:1px solid rgba(56,189,248,0.2);
+  background:#111827;
+  padding:25px;
+  border-radius:12px;
+  width:300px;
 }
 
 input{
   width:100%;
-  padding:12px;
+  padding:10px;
   margin:8px 0;
   border:none;
-  border-radius:10px;
-  background:#111827;
+  border-radius:8px;
+  background:#0f172a;
   color:white;
 }
 
 button{
   width:100%;
-  padding:12px;
+  padding:10px;
   border:none;
-  border-radius:10px;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-  color:white;
+  border-radius:8px;
+  background:#38bdf8;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.switch{
+  text-align:center;
+  margin-top:10px;
+  font-size:12px;
+  opacity:0.7;
   cursor:pointer;
 }
 </style>
@@ -50,29 +56,77 @@ button{
 <body>
 
 <div class="box">
-  <h2>Login 🔐</h2>
+
+  <h2 id="title">Login 🔐</h2>
 
   <input id="user" placeholder="Username">
   <input id="pass" type="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
+  <button onclick="action()">Continue</button>
+
+  <div class="switch" onclick="toggle()">
+    Switch to Register
+  </div>
+
 </div>
 
 <script>
-function login(){
+
+let mode = "login";
+
+/* TOGGLE */
+function toggle(){
+  mode = mode === "login" ? "register" : "login";
+  document.getElementById("title").innerText =
+    mode === "login" ? "Login 🔐" : "Register 🆕";
+}
+
+/* GET USERS */
+function getUsers(){
+  return JSON.parse(localStorage.getItem("users")) || [];
+}
+
+/* SAVE USERS */
+function saveUsers(data){
+  localStorage.setItem("users", JSON.stringify(data));
+}
+
+/* MAIN ACTION */
+function action(){
+
   let user = document.getElementById("user").value;
   let pass = document.getElementById("pass").value;
 
-  if(!user || !pass){
-    alert("Fill all fields");
+  if(!user || !pass) return alert("fill all");
+
+  let users = getUsers();
+
+  /* REGISTER */
+  if(mode === "register"){
+
+    let exists = users.find(u => u.user === user);
+
+    if(exists) return alert("User already exists");
+
+    users.push({user, pass});
+    saveUsers(users);
+
+    alert("Account created!");
+    toggle();
     return;
   }
 
-  localStorage.setItem("auth", "true");
-  localStorage.setItem("user", user);
+  /* LOGIN */
+  let found = users.find(u => u.user === user && u.pass === pass);
+
+  if(!found) return alert("Wrong credentials");
+
+  localStorage.setItem("auth","true");
+  localStorage.setItem("user",user);
 
   window.location.href = "dashboard.html";
 }
+
 </script>
 
 </body>
