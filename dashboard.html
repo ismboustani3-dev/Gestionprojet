@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pro Dashboard</title>
+<title>Dashboard</title>
 
 <style>
 body{
@@ -12,22 +12,13 @@ body{
   color:white;
 }
 
-/* TOP BAR */
+/* TOP */
 .topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:15px 20px;
+  padding:15px;
   background:#111827;
-}
-
-.logout{
-  background:#ef4444;
-  border:none;
-  padding:8px 12px;
-  border-radius:8px;
-  color:white;
-  cursor:pointer;
 }
 
 /* CONTAINER */
@@ -35,7 +26,7 @@ body{
   padding:20px;
 }
 
-/* FORM */
+/* INPUTS */
 input{
   padding:10px;
   margin:5px;
@@ -53,10 +44,15 @@ button{
   cursor:pointer;
 }
 
+/* SEARCH */
+.searchBox{
+  margin:10px 0;
+}
+
 /* TABLE */
 table{
   width:100%;
-  margin-top:20px;
+  margin-top:15px;
   border-collapse:collapse;
   background:#111827;
   border-radius:10px;
@@ -74,22 +70,22 @@ th{
   color:#38bdf8;
 }
 
-/* ACTIONS */
+/* BUTTONS */
 .edit{
   background:#22c55e;
-  color:white;
   border:none;
   padding:5px 8px;
   border-radius:6px;
+  color:white;
   cursor:pointer;
 }
 
 .del{
   background:#ef4444;
-  color:white;
   border:none;
   padding:5px 8px;
   border-radius:6px;
+  color:white;
   cursor:pointer;
 }
 </style>
@@ -98,24 +94,17 @@ th{
 <body>
 
 <script>
-let user = localStorage.getItem("user");
-
-if(!user){
+if(!localStorage.getItem("user")){
   window.location.href="index.html";
 }
 </script>
 
-<!-- TOP BAR -->
+<!-- TOP -->
 <div class="topbar">
   <h3>📊 Dashboard</h3>
-
-  <div>
-    👤 <span id="username"></span>
-    <button class="logout" onclick="logout()">Logout</button>
-  </div>
+  <button onclick="logout()" style="background:#ef4444;">Logout</button>
 </div>
 
-<!-- CONTENT -->
 <div class="container">
 
 <h3>➕ Add Project</h3>
@@ -124,6 +113,11 @@ if(!user){
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
 <button onclick="add()">Add</button>
+
+<!-- SEARCH -->
+<div class="searchBox">
+  🔍 <input id="search" oninput="render()" placeholder="Search by username">
+</div>
 
 <!-- TABLE -->
 <table>
@@ -143,8 +137,6 @@ if(!user){
 
 <script>
 
-document.getElementById("username").innerText = user;
-
 /* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
@@ -158,18 +150,25 @@ function save(data){
 function add(){
   let data = getData();
 
-  let u = document.getElementById("user").value;
-  let n = document.getElementById("name").value;
-  let l = document.getElementById("link").value;
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
-  if(!u || !n || !l) return alert("Fill all fields");
-
-  if(!l.startsWith("http")){
-    l = "https://" + l;
+  if(!user || !name || !link){
+    return alert("Fill all fields");
   }
 
-  data.push({user:u, name:n, link:l});
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
+
+  data.push({user, name, link});
   save(data);
+
+  document.getElementById("user").value = "";
+  document.getElementById("name").value = "";
+  document.getElementById("link").value = "";
+
   render();
 }
 
@@ -200,20 +199,24 @@ function edit(i){
   }
 }
 
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("user");
-  window.location.href = "index.html";
-}
-
-/* RENDER */
+/* SEARCH + RENDER */
 function render(){
   let data = getData();
-  let table = document.getElementById("table");
+  let search = document.getElementById("search").value.toLowerCase();
 
+  let table = document.getElementById("table");
   table.innerHTML = "";
 
-  data.forEach((p,i)=>{
+  let filtered = data.filter(p =>
+    p.user.toLowerCase().includes(search)
+  );
+
+  if(filtered.length === 0){
+    table.innerHTML = `<tr><td colspan="4">No data found</td></tr>`;
+    return;
+  }
+
+  filtered.forEach((p,i)=>{
     table.innerHTML += `
       <tr>
         <td>${p.user}</td>
@@ -226,6 +229,12 @@ function render(){
       </tr>
     `;
   });
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href="index.html";
 }
 
 render();
