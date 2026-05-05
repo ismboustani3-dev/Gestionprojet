@@ -13,7 +13,6 @@ body{
   display:flex;
 }
 
-/* sidebar */
 .sidebar{
   width:220px;
   height:100vh;
@@ -30,13 +29,11 @@ select{
   color:white;
 }
 
-/* main */
 .main{
   flex:1;
   padding:20px;
 }
 
-/* inputs */
 input{
   padding:10px;
   margin:5px;
@@ -44,9 +41,9 @@ input{
   border-radius:8px;
   background:#111827;
   color:white;
+  width:200px;
 }
 
-/* button */
 button{
   padding:10px 14px;
   border:none;
@@ -55,7 +52,6 @@ button{
   cursor:pointer;
 }
 
-/* stats */
 .stats{
   display:flex;
   gap:15px;
@@ -70,7 +66,6 @@ button{
   text-align:center;
 }
 
-/* card */
 .card{
   background:#1e293b;
   padding:12px;
@@ -78,7 +73,6 @@ button{
   border-radius:10px;
 }
 
-/* btn */
 .btn{
   margin-top:10px;
   padding:5px 10px;
@@ -132,12 +126,12 @@ if(!localStorage.getItem("user")){
   </div>
 </div>
 
-<!-- ADD -->
+<!-- ADD FORM -->
 <h3>➕ Add Project</h3>
 
+<input id="user" placeholder="Username">
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
-<input id="user" placeholder="User name">
 
 <button onclick="add()">Add</button>
 
@@ -162,7 +156,7 @@ function getUsers(data){
   return [...new Set(data.map(p => p.user))];
 }
 
-/* GLOBAL */
+/* GLOBAL FOR FILTER FIX */
 let filteredData = [];
 
 /* RENDER */
@@ -208,36 +202,36 @@ function updateFilter(data){
   });
 }
 
-/* ADD (FIX LINK BUG HERE) */
+/* ADD (FIX LINK) */
 function add(){
   let data = getData();
 
+  let user = document.getElementById("user").value;
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
-  let user = document.getElementById("user").value;
 
-  if(!name || !link || !user) return alert("Fill all fields");
+  if(!user || !name || !link) return alert("Fill all fields");
 
   // 🔥 FIX LINK
   if(!link.startsWith("http")){
     link = "https://" + link;
   }
 
-  data.push({name, link, user});
+  data.push({user, name, link});
   save(data);
   render();
 }
 
-/* DELETE */
+/* DELETE FIX */
 function del(i){
   let data = getData();
 
   let item = filteredData[i];
 
   let index = data.findIndex(p =>
+    p.user === item.user &&
     p.name === item.name &&
-    p.link === item.link &&
-    p.user === item.user
+    p.link === item.link
   );
 
   data.splice(index,1);
@@ -245,28 +239,29 @@ function del(i){
   render();
 }
 
-/* EDIT */
+/* EDIT FIX */
 function edit(i){
   let data = getData();
 
   let item = filteredData[i];
 
   let index = data.findIndex(p =>
+    p.user === item.user &&
     p.name === item.name &&
-    p.link === item.link &&
-    p.user === item.user
+    p.link === item.link
   );
 
-  let n = prompt("Name", data[index].name);
-  let l = prompt("Link", data[index].link);
   let u = prompt("User", data[index].user);
+  let n = prompt("Project name", data[index].name);
+  let l = prompt("Link", data[index].link);
 
-  if(n && l && u){
+  if(u && n && l){
+
     if(!l.startsWith("http")){
       l = "https://" + l;
     }
 
-    data[index] = {name:n, link:l, user:u};
+    data[index] = {user:u, name:n, link:l};
     save(data);
     render();
   }
