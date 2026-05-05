@@ -2,99 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>User Projects Dashboard</title>
+<title>Dashboard</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-
 body{
   font-family:Arial;
   background:#0b1220;
   color:white;
 }
 
-/* TOP */
 .topbar{
   padding:15px;
   background:#111827;
-  text-align:center;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-/* CONTAINER */
 .container{
   padding:20px;
 }
 
-/* INPUT AREA */
-.form{
-  margin-bottom:20px;
-}
-
-input{
+input,button{
   padding:10px;
   margin:5px;
   border:none;
   border-radius:8px;
+}
+
+input{
   background:#0f172a;
   color:white;
 }
 
 button{
-  padding:10px 14px;
-  border:none;
-  border-radius:8px;
   background:#38bdf8;
   cursor:pointer;
 }
 
-/* USERS GRID */
+.logout{
+  background:#ef4444;
+}
+
 .users{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:15px;
 }
 
-/* USER CARD */
 .card{
   background:#111827;
   padding:15px;
   border-radius:12px;
 }
 
-/* TITLE */
-.card h3{
-  margin-bottom:5px;
-}
-
-/* SMALL TEXT */
-.small{
-  font-size:12px;
-  opacity:0.7;
-  margin-bottom:10px;
-}
-
-/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
 }
 
-th,td{
+td,th{
   padding:8px;
   border-bottom:1px solid #2d3748;
-  text-align:left;
 }
 
-th{
-  color:#38bdf8;
-}
+th{ color:#38bdf8; }
 
-a{
-  color:#38bdf8;
+.delete{
+  color:red;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -102,37 +78,42 @@ a{
 <body>
 
 <div class="topbar">
-  <h2>📊 Projects by User</h2>
+  <h2>📊 Welcome <span id="username"></span></h2>
+  <button class="logout" onclick="logout()">Logout</button>
 </div>
 
 <div class="container">
 
-  <!-- ADD FORM -->
-  <div class="form">
+  <div>
     <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- USERS -->
   <div id="users" class="users"></div>
 
 </div>
 
 <script>
 
-/* GET DATA */
+/* حماية الصفحة */
+if(localStorage.getItem("auth") !== "true"){
+  window.location.href = "index.html";
+}
+
+document.getElementById("username").innerText = localStorage.getItem("user");
+
+/* data */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-/* SAVE DATA */
 function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
 
-/* ADD PROJECT */
+/* add */
 function add(){
   let data = getData();
 
@@ -141,68 +122,71 @@ function add(){
   let link = document.getElementById("link").value;
 
   if(!user || !name || !link){
-    return alert("Fill all fields");
+    alert("Fill all fields");
+    return;
   }
 
   if(!link.startsWith("http")){
     link = "https://" + link;
   }
 
-  data.push({user,name,link});
+  data.push({
+    id: Date.now(),
+    user,
+    name,
+    link
+  });
+
   save(data);
-
-  document.getElementById("user").value="";
-  document.getElementById("name").value="";
-  document.getElementById("link").value="";
-
   render();
 }
 
-/* RENDER USERS GROUPED */
-function render(){
+/* delete */
+function remove(id){
+  let data = getData().filter(p => p.id !== id);
+  save(data);
+  render();
+}
 
+/* logout */
+function logout(){
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+}
+
+/* render */
+function render(){
   let data = getData();
   let container = document.getElementById("users");
-
   container.innerHTML = "";
 
-  // group by user
   let grouped = {};
 
   data.forEach(p=>{
-    if(!grouped[p.user]){
-      grouped[p.user] = [];
-    }
+    if(!grouped[p.user]) grouped[p.user] = [];
     grouped[p.user].push(p);
   });
 
-  // create cards
   for(let user in grouped){
-
-    let projects = grouped[user];
-
-    let rows = projects.map(p=>`
+    let rows = grouped[user].map(p=>`
       <tr>
         <td>${p.name}</td>
         <td><a href="${p.link}" target="_blank">open</a></td>
+        <td><span class="delete" onclick="remove(${p.id})">delete</span></td>
       </tr>
     `).join("");
 
     container.innerHTML += `
       <div class="card">
         <h3>👤 ${user}</h3>
-        <div class="small">${projects.length} projects</div>
-
         <table>
-          <thead>
-            <tr>
-              <th>Project</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows}
-          </tbody>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
         </table>
       </div>
     `;
