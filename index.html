@@ -20,7 +20,7 @@ body{
   background:#111827;
   padding:25px;
   border-radius:12px;
-  width:300px;
+  width:320px;
 }
 
 input{
@@ -40,7 +40,6 @@ button{
   border-radius:8px;
   background:#38bdf8;
   cursor:pointer;
-  margin-top:8px;
 }
 
 .switch{
@@ -65,7 +64,7 @@ button{
   <button onclick="action()">Continue</button>
 
   <div class="switch" onclick="toggle()">
-    Switch to Register
+    Switch mode
   </div>
 
 </div>
@@ -74,30 +73,28 @@ button{
 
 let mode = "login";
 
-/* TOGGLE */
+/* SWITCH */
 function toggle(){
-  mode = mode === "login" ? "register" : "login";
+  mode = (mode === "login") ? "register" : "login";
   document.getElementById("title").innerText =
     mode === "login" ? "Login 🔐" : "Register 🆕";
 }
 
-/* GET USERS */
+/* USERS */
 function getUsers(){
   return JSON.parse(localStorage.getItem("users")) || [];
 }
 
-/* SAVE USERS */
-function saveUsers(data){
-  localStorage.setItem("users", JSON.stringify(data));
-}
-
-/* MAIN ACTION */
+/* MAIN */
 function action(){
 
-  let user = document.getElementById("user").value;
-  let pass = document.getElementById("pass").value;
+  let user = document.getElementById("user").value.trim();
+  let pass = document.getElementById("pass").value.trim();
 
-  if(!user || !pass) return alert("fill all");
+  if(!user || !pass){
+    alert("Fill all fields");
+    return;
+  }
 
   let users = getUsers();
 
@@ -106,10 +103,13 @@ function action(){
 
     let exists = users.find(u => u.user === user);
 
-    if(exists) return alert("User already exists");
+    if(exists){
+      alert("User already exists");
+      return;
+    }
 
     users.push({user, pass});
-    saveUsers(users);
+    localStorage.setItem("users", JSON.stringify(users));
 
     alert("Account created!");
     toggle();
@@ -119,7 +119,10 @@ function action(){
   /* LOGIN */
   let found = users.find(u => u.user === user && u.pass === pass);
 
-  if(!found) return alert("Wrong credentials");
+  if(!found){
+    alert("Wrong credentials");
+    return;
+  }
 
   localStorage.setItem("auth","true");
   localStorage.setItem("user",user);
