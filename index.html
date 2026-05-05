@@ -5,39 +5,41 @@
 <title>Login</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial;
-  background: #0b1220;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  color: white;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#0a0f1c;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
 }
 
-.box {
-  background: #1e293b;
-  padding: 30px;
-  border-radius: 12px;
-  width: 300px;
+.box{
+  background:#1e293b;
+  padding:30px;
+  border-radius:12px;
+  width:300px;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0;
-  border-radius: 6px;
-  border: none;
+input{
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+  border:none;
+  border-radius:8px;
+  background:#111827;
+  color:white;
 }
 
-button {
-  width: 100%;
-  padding: 10px;
-  background: #38bdf8;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+button{
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -54,16 +56,15 @@ button {
 </div>
 
 <script>
-function login() {
+function login(){
   const user = document.getElementById("user").value;
   const pass = document.getElementById("pass").value;
 
-  // demo login
-  if(user === "admin" && pass === "1234") {
-    localStorage.setItem("auth", "true");
+  if(user && pass){
+    localStorage.setItem("user", user);
     window.location.href = "dashboard.html";
   } else {
-    alert("Wrong username or password ❌");
+    alert("Fill fields ❌");
   }
 }
 </script>
