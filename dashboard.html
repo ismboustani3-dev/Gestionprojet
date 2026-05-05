@@ -41,7 +41,6 @@ input{
   border-radius:8px;
   background:#111827;
   color:white;
-  width:200px;
 }
 
 button{
@@ -126,7 +125,7 @@ if(!localStorage.getItem("user")){
   </div>
 </div>
 
-<!-- ADD FORM -->
+<!-- ADD -->
 <h3>➕ Add Project</h3>
 
 <input id="user" placeholder="Username">
@@ -156,7 +155,7 @@ function getUsers(data){
   return [...new Set(data.map(p => p.user))];
 }
 
-/* GLOBAL FOR FILTER FIX */
+/* GLOBAL */
 let filteredData = [];
 
 /* RENDER */
@@ -174,12 +173,15 @@ function render(){
   filteredData.forEach((p,i)=>{
     list.innerHTML += `
       <div class="card">
-        <h3>${p.name}</h3>
-        <p>👤 ${p.user}</p>
-        <a href="${p.link}" target="_blank">${p.link}</a><br>
+
+        <!-- 🔥 ORDER FIXED -->
+        <p>👤 Username: <b>${p.user}</b></p>
+        <p>📂 Project name: <b>${p.name}</b></p>
+        <p>🔗 Link: <a href="${p.link}" target="_blank">${p.link}</a></p>
 
         <button class="btn edit" onclick="edit(${i})">Edit</button>
         <button class="btn del" onclick="del(${i})">Delete</button>
+
       </div>
     `;
   });
@@ -202,7 +204,7 @@ function updateFilter(data){
   });
 }
 
-/* ADD (FIX LINK) */
+/* ADD */
 function add(){
   let data = getData();
 
@@ -210,9 +212,11 @@ function add(){
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!user || !name || !link) return alert("Fill all fields");
+  if(!user || !name || !link){
+    return alert("Fill all fields");
+  }
 
-  // 🔥 FIX LINK
+  // fix link
   if(!link.startsWith("http")){
     link = "https://" + link;
   }
@@ -222,7 +226,7 @@ function add(){
   render();
 }
 
-/* DELETE FIX */
+/* DELETE */
 function del(i){
   let data = getData();
 
@@ -239,7 +243,7 @@ function del(i){
   render();
 }
 
-/* EDIT FIX */
+/* EDIT */
 function edit(i){
   let data = getData();
 
@@ -251,9 +255,9 @@ function edit(i){
     p.link === item.link
   );
 
-  let u = prompt("User", data[index].user);
+  let u = prompt("Username", data[index].user);
   let n = prompt("Project name", data[index].name);
-  let l = prompt("Link", data[index].link);
+  let l = prompt("Project link", data[index].link);
 
   if(u && n && l){
 
