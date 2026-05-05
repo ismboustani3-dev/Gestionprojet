@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
@@ -42,6 +42,21 @@ button{
   border-radius:8px;
   background:#38bdf8;
   cursor:pointer;
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:15px;
+  margin:15px 0;
+}
+
+.stat{
+  flex:1;
+  background:#1e293b;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
 }
 
 /* SEARCH */
@@ -88,6 +103,15 @@ th{
   color:white;
   cursor:pointer;
 }
+
+/* LINK STYLE */
+a{
+  color:#38bdf8;
+  text-decoration:none;
+}
+a:hover{
+  text-decoration:underline;
+}
 </style>
 </head>
 
@@ -113,6 +137,19 @@ if(!localStorage.getItem("user")){
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
 <button onclick="add()">Add</button>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <h2 id="totalProjects">0</h2>
+    <p>Projects</p>
+  </div>
+
+  <div class="stat">
+    <h2 id="totalUsers">0</h2>
+    <p>Users</p>
+  </div>
+</div>
 
 <!-- SEARCH -->
 <div class="searchBox">
@@ -165,9 +202,9 @@ function add(){
   data.push({user, name, link});
   save(data);
 
-  document.getElementById("user").value = "";
-  document.getElementById("name").value = "";
-  document.getElementById("link").value = "";
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
 
   render();
 }
@@ -189,6 +226,7 @@ function edit(i){
   let l = prompt("Link", data[i].link);
 
   if(u && n && l){
+
     if(!l.startsWith("http")){
       l = "https://" + l;
     }
@@ -199,7 +237,7 @@ function edit(i){
   }
 }
 
-/* SEARCH + RENDER */
+/* RENDER */
 function render(){
   let data = getData();
   let search = document.getElementById("search").value.toLowerCase();
@@ -211,6 +249,11 @@ function render(){
     p.user.toLowerCase().includes(search)
   );
 
+  /* STATS */
+  document.getElementById("totalProjects").innerText = data.length;
+  document.getElementById("totalUsers").innerText =
+    [...new Set(data.map(p => p.user))].length;
+
   if(filtered.length === 0){
     table.innerHTML = `<tr><td colspan="4">No data found</td></tr>`;
     return;
@@ -221,7 +264,11 @@ function render(){
       <tr>
         <td>${p.user}</td>
         <td>${p.name}</td>
-        <td><a href="${p.link}" target="_blank">Open</a></td>
+        <td>
+          <a href="${p.link}" target="_blank">
+            🔗 Open Link
+          </a>
+        </td>
         <td>
           <button class="edit" onclick="edit(${i})">Edit</button>
           <button class="del" onclick="del(${i})">Delete</button>
