@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Firebase Login</title>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <style>
 body{
@@ -17,10 +20,10 @@ body{
 }
 
 .box{
-  background:#1e293b;
-  padding:30px;
+  background:#111827;
+  padding:25px;
   border-radius:12px;
-  width:300px;
+  width:320px;
 }
 
 input{
@@ -29,7 +32,7 @@ input{
   margin:8px 0;
   border:none;
   border-radius:8px;
-  background:#111827;
+  background:#0f172a;
   color:white;
 }
 
@@ -41,53 +44,79 @@ button{
   background:#38bdf8;
   cursor:pointer;
 }
-
-.error{
-  color:red;
-  font-size:13px;
-  margin-top:5px;
-}
 </style>
-
 </head>
+
 <body>
 
 <div class="box">
+
   <h2>Login 🔐</h2>
 
-  <input id="user" placeholder="Username">
+  <input id="email" placeholder="Email">
   <input id="pass" type="password" placeholder="Password">
 
   <button onclick="login()">Login</button>
 
-  <div class="error" id="error"></div>
 </div>
 
 <script>
 
-// 🔥 admin credentials
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "1234";
+/* FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID"
+};
 
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+/* LOGIN */
 function login(){
-  let user = document.getElementById("user").value;
-  let pass = document.getElementById("pass").value;
 
-  let error = document.getElementById("error");
+  let email = document.getElementById("email").value.trim();
+  let pass = document.getElementById("pass").value.trim();
 
-  if(!user || !pass){
-    error.textContent = "Fill all fields";
+  if(!email || !pass){
+    alert("Fill all fields");
     return;
   }
 
-  if(user === ADMIN_USER && pass === ADMIN_PASS){
-    localStorage.setItem("role", "admin");
-    localStorage.setItem("user", user);
+  db.collection("users")
+    .where("email","==",email)
+    .get()
+    .then(snapshot => {
 
-    window.location.href = "dashboard.html";
-  } else {
-    error.textContent = "Wrong username or password";
-  }
+      if(snapshot.empty){
+        alert("User not found");
+        return;
+      }
+
+      let userData = null;
+
+      snapshot.forEach(doc=>{
+        userData = doc.data();
+      });
+
+      if(userData.password !== pass){
+        alert("Wrong password");
+        return;
+      }
+
+      localStorage.setItem("user", userData.email);
+      localStorage.setItem("role", userData.role);
+
+      alert("Login success");
+
+      if(userData.role === "admin"){
+        location.href="admin.html";
+      }else{
+        location.href="dashboard.html";
+      }
+
+    });
+
 }
 
 </script>
