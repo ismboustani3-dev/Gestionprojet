@@ -2,42 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Admin Panel</title>
 
 <style>
 body{
   margin:0;
-  font-family:'Segoe UI', sans-serif;
+  font-family:Arial;
   background:#0a0f1c;
   color:white;
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar{
-  width:220px;
-  height:100vh;
-  background:#111827;
   padding:20px;
 }
 
-/* MAIN */
-.main{
-  flex:1;
-  padding:20px;
-}
-
-/* TOP */
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
-  background:#111827;
-  border-radius:12px;
-}
-
-/* INPUTS */
 input,button{
   padding:10px;
   margin:5px;
@@ -46,223 +21,109 @@ input,button{
 }
 
 input{
-  background:#0f172a;
+  background:#111827;
   color:white;
 }
 
 button{
   background:#38bdf8;
-  color:white;
   cursor:pointer;
 }
 
-/* STATS */
-.stats{
-  display:flex;
-  gap:10px;
-  margin:15px 0;
-}
-
-.stat{
-  flex:1;
-  padding:12px;
-  background:#111827;
-  border-radius:10px;
-  color:#38bdf8;
-}
-
-/* CARD */
 .card{
   background:#111827;
   padding:15px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th,td{
-  padding:8px;
-  border-bottom:1px solid #2d3748;
-}
-
-th{
-  color:#38bdf8;
-}
-
-a{
-  color:#38bdf8;
-  text-decoration:none;
-}
-
-.delete{
-  color:red;
-  cursor:pointer;
-}
-
-.edit{
-  color:yellow;
-  cursor:pointer;
-  margin-left:5px;
+  margin-top:10px;
+  border-radius:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <h2>Dashboard</h2>
-  <p id="username"></p>
-</div>
+<h2>👑 Admin Panel</h2>
 
-<div class="main">
+<input id="u" placeholder="username">
+<input id="p" type="password" placeholder="password">
+<button onclick="create()">Create User</button>
 
-  <div class="topbar">
-    <h3>Projects Manager</h3>
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <!-- STATS -->
-  <div class="stats">
-    <div class="stat">👤 Users: <span id="usersCount">0</span></div>
-    <div class="stat">📁 Projects: <span id="projectsCount">0</span></div>
-  </div>
-
-  <!-- FORM -->
-  <div>
-    <input id="name" placeholder="Project name">
-    <input id="link" placeholder="Project link">
-    <button onclick="add()">Add</button>
-  </div>
-
-  <!-- LIST -->
-  <div id="list"></div>
-
-</div>
+<h3>Users</h3>
+<div id="list"></div>
 
 <script>
 
-/* AUTH CHECK */
-if(localStorage.getItem("auth") !== "true"){
+/* CHECK ADMIN */
+if(localStorage.getItem("role") !== "admin"){
   location.href="index.html";
 }
 
-/* USER */
-let currentUser = localStorage.getItem("user");
-document.getElementById("username").innerText = "👤 " + currentUser;
-
-/* DATA PER USER */
-function getData(){
-  return JSON.parse(localStorage.getItem("projects_"+currentUser)) || [];
+/* USERS */
+function getUsers(){
+  return JSON.parse(localStorage.getItem("users")) || [];
 }
 
-function save(data){
-  localStorage.setItem("projects_"+currentUser, JSON.stringify(data));
+function save(u){
+  localStorage.setItem("users", JSON.stringify(u));
 }
 
-/* ADD */
-function add(){
-  let data = getData();
+/* CREATE USER */
+function create(){
 
-  let name = document.getElementById("name").value.trim();
-  let link = document.getElementById("link").value.trim();
+  let u = document.getElementById("u").value.trim();
+  let p = document.getElementById("p").value.trim();
 
-  if(!name || !link){
+  if(!u || !p){
     alert("fill all");
     return;
   }
 
-  if(!link.startsWith("http")) link = "https://" + link;
+  let users = getUsers();
 
-  data.push({id:Date.now(), name, link});
+  let exists = users.find(x => x.user === u);
 
-  save(data);
-
-  document.getElementById("name").value="";
-  document.getElementById("link").value="";
-
-  render();
-}
-
-/* DELETE */
-function del(id){
-  let data = getData().filter(p => p.id !== id);
-  save(data);
-  render();
-}
-
-/* EDIT */
-function edit(id){
-  let data = getData();
-  let p = data.find(x => x.id === id);
-
-  let n = prompt("edit name", p.name);
-  let l = prompt("edit link", p.link);
-
-  if(n) p.name = n;
-  if(l){
-    if(!l.startsWith("http")) l = "https://" + l;
-    p.link = l;
+  if(exists){
+    alert("user exists");
+    return;
   }
 
-  save(data);
+  users.push({
+    user:u,
+    pass:p,
+    role:"user"
+  });
+
+  save(users);
+
+  document.getElementById("u").value="";
+  document.getElementById("p").value="";
+
   render();
 }
 
-/* STATS */
-function stats(data){
-  document.getElementById("usersCount").innerText = 1;
-  document.getElementById("projectsCount").innerText = data.length;
+/* DELETE USER */
+function del(user){
+  let users = getUsers().filter(u => u.user !== user);
+  save(users);
+  render();
 }
 
 /* RENDER */
 function render(){
-  let data = getData();
-  let box = document.getElementById("list");
 
+  let users = getUsers();
+
+  let box = document.getElementById("list");
   box.innerHTML="";
 
-  if(data.length === 0){
-    box.innerHTML = "<p>No projects</p>";
-    stats(data);
-    return;
-  }
+  users.forEach(u=>{
 
-  box.innerHTML = `
-    <div class="card">
-      <table>
-        <tr>
-          <th>Project</th>
-          <th>Link</th>
-          <th>Action</th>
-        </tr>
-
-        ${data.map(p=>`
-          <tr>
-            <td>${p.name}</td>
-            <td><a href="${p.link}" target="_blank">open</a></td>
-            <td>
-              <span class="delete" onclick="del(${p.id})">del</span>
-              <span class="edit" onclick="edit(${p.id})">edit</span>
-            </td>
-          </tr>
-        `).join("")}
-
-      </table>
-    </div>
-  `;
-
-  stats(data);
-}
-
-/* LOGOUT */
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
+    box.innerHTML += `
+      <div class="card">
+        👤 ${u.user} (${u.role})
+        ${u.role !== "admin" ? `<button onclick="del('${u.user}')">delete</button>` : ""}
+      </div>
+    `;
+  });
 }
 
 render();
