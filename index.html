@@ -60,12 +60,15 @@ function login(){
   let user = document.getElementById("user").value;
   let pass = document.getElementById("pass").value;
 
-  if(user && pass){
-    localStorage.setItem("user", user);
-    window.location.href = "dashboard.html";
-  } else {
+  if(!user || !pass){
     alert("Fill all fields");
+    return;
   }
+
+  localStorage.setItem("user", user);
+  localStorage.setItem("auth", "true");
+
+  window.location.href = "dashboard.html";
 }
 </script>
 
