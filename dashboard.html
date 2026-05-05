@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>User Dashboard</title>
 
 <style>
 body{
@@ -12,121 +12,37 @@ body{
   color:white;
   padding:20px;
 }
-
-input,button{
-  padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:8px;
-}
-
-input{
-  background:#111827;
-  color:white;
-}
-
-button{
-  background:#38bdf8;
-  cursor:pointer;
-}
-
-.card{
-  background:#111827;
-  padding:15px;
-  margin-top:10px;
-  border-radius:10px;
-}
 </style>
 </head>
 
 <body>
 
-<h2>👑 Admin Panel</h2>
+<h2>📊 Dashboard</h2>
 
-<input id="u" placeholder="username">
-<input id="p" type="password" placeholder="password">
-<button onclick="create()">Create User</button>
+<p>Welcome 👤 <span id="u"></span></p>
 
-<h3>Users</h3>
-<div id="list"></div>
+<button onclick="logout()">Logout</button>
 
 <script>
 
-/* CHECK ADMIN */
-if(localStorage.getItem("role") !== "admin"){
+/* BLOCK ADMIN */
+if(localStorage.getItem("role") === "admin"){
+  location.href="admin.html";
+}
+
+/* AUTH CHECK */
+if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-/* USERS */
-function getUsers(){
-  return JSON.parse(localStorage.getItem("users")) || [];
+document.getElementById("u").innerText =
+localStorage.getItem("user");
+
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
 }
-
-function save(u){
-  localStorage.setItem("users", JSON.stringify(u));
-}
-
-/* CREATE USER */
-function create(){
-
-  let u = document.getElementById("u").value.trim();
-  let p = document.getElementById("p").value.trim();
-
-  if(!u || !p){
-    alert("fill all");
-    return;
-  }
-
-  let users = getUsers();
-
-  let exists = users.find(x => x.user === u);
-
-  if(exists){
-    alert("user exists");
-    return;
-  }
-
-  users.push({
-    user:u,
-    pass:p,
-    role:"user"
-  });
-
-  save(users);
-
-  document.getElementById("u").value="";
-  document.getElementById("p").value="";
-
-  render();
-}
-
-/* DELETE USER */
-function del(user){
-  let users = getUsers().filter(u => u.user !== user);
-  save(users);
-  render();
-}
-
-/* RENDER */
-function render(){
-
-  let users = getUsers();
-
-  let box = document.getElementById("list");
-  box.innerHTML="";
-
-  users.forEach(u=>{
-
-    box.innerHTML += `
-      <div class="card">
-        👤 ${u.user} (${u.role})
-        ${u.role !== "admin" ? `<button onclick="del('${u.user}')">delete</button>` : ""}
-      </div>
-    `;
-  });
-}
-
-render();
 
 </script>
 
