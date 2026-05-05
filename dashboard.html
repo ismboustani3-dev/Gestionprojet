@@ -2,24 +2,53 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
-  font-family:Arial;
   margin:0;
-  background: radial-gradient(circle at top,#0f172a,#0b1220);
+  font-family:'Segoe UI', sans-serif;
+  background:#0a0f1c;
   color:white;
+  display:flex;
 }
 
-/* TOP */
-.topbar{
-  padding:18px;
-  background: rgba(17,24,39,0.7);
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  height:100vh;
+  background: rgba(17,24,39,0.8);
   backdrop-filter: blur(10px);
+  padding:20px;
+  border-right:1px solid rgba(255,255,255,0.05);
+}
+
+.sidebar h2{
+  color:#38bdf8;
+  margin-bottom:10px;
+}
+
+.sidebar p{
+  opacity:0.6;
+  font-size:13px;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  padding:20px;
+}
+
+/* TOPBAR */
+.topbar{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  padding:15px;
+  background: rgba(17,24,39,0.6);
+  border-radius:12px;
+  backdrop-filter: blur(10px);
+  margin-bottom:20px;
 }
 
 .logout{
@@ -31,17 +60,13 @@ body{
   cursor:pointer;
 }
 
-/* CONTAINER */
-.container{
-  padding:20px;
-}
-
 /* INPUTS */
 input,button{
   padding:12px;
   margin:5px;
   border:none;
   border-radius:10px;
+  transition:0.3s;
 }
 
 input{
@@ -50,10 +75,19 @@ input{
   outline:none;
 }
 
+input:focus{
+  transform:scale(1.03);
+  box-shadow:0 0 10px #38bdf8;
+}
+
 button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
+}
+
+button:hover{
+  transform:scale(1.05);
 }
 
 /* GRID */
@@ -66,11 +100,17 @@ button{
 
 /* CARD */
 .card{
-  background: rgba(17,24,39,0.7);
+  background: rgba(17,24,39,0.6);
   backdrop-filter: blur(10px);
   padding:15px;
   border-radius:15px;
-  border:1px solid rgba(56,189,248,0.2);
+  border:1px solid rgba(56,189,248,0.15);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(56,189,248,0.2);
 }
 
 /* TABLE */
@@ -81,7 +121,7 @@ table{
 
 th,td{
   padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 th{
@@ -94,7 +134,7 @@ a{
 }
 
 .delete{
-  color:red;
+  color:#ef4444;
   cursor:pointer;
 }
 </style>
@@ -102,12 +142,22 @@ a{
 
 <body>
 
-<div class="topbar">
-  <h2>📊 Welcome <span id="username"></span></h2>
-  <button class="logout" onclick="logout()">Logout</button>
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>⚡ Dashboard</h2>
+  <p>Projects Manager</p>
+  <p>• Add Projects</p>
+  <p>• Manage Users</p>
+  <p>• Local Storage DB</p>
 </div>
 
-<div class="container">
+<!-- MAIN -->
+<div class="main">
+
+  <div class="topbar">
+    <h3>📊 Welcome <span id="username"></span></h3>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
 
   <!-- FORM -->
   <div>
@@ -117,29 +167,27 @@ a{
     <button onclick="add()">Add</button>
   </div>
 
+  <!-- USERS -->
   <div id="users" class="users"></div>
 
 </div>
 
 <script>
 
-/* ✅ AUTH CHECK FIX */
-let auth = localStorage.getItem("auth");
-
-if(!auth || auth !== "true"){
+/* 🔐 AUTH CHECK */
+if(localStorage.getItem("auth") !== "true"){
   window.location.href = "index.html";
 }
 
-/* show user */
+/* USER NAME */
 document.getElementById("username").innerText =
 localStorage.getItem("user") || "User";
 
-/* GET DATA */
+/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-/* SAVE */
 function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
@@ -190,7 +238,7 @@ function logout(){
   window.location.href = "index.html";
 }
 
-/* RENDER FIX (NO EMPTY SCREEN) */
+/* RENDER FIX */
 function render(){
   let data = getData();
   let container = document.getElementById("users");
@@ -228,6 +276,7 @@ function render(){
     container.innerHTML += `
       <div class="card">
         <h3>👤 ${user}</h3>
+
         <table>
           <tr>
             <th>Project</th>
