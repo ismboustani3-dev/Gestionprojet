@@ -1,50 +1,300 @@
-<div class="container">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Pro</title>
 
-  <!-- ✅ STATS FIRST -->
-  <div class="card">
-    <h3>📊 Stats</h3>
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-    <div class="stats">
-      <div class="stat">
-        <h2 id="totalProjects">0</h2>
-        <p>Projects</p>
+body{
+  font-family:Arial;
+  background:#0b1220;
+  color:white;
+  display:flex;
+}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;
+  background:#111827;
+  height:100vh;
+  padding:20px;
+}
+
+.sidebar h2{
+  margin-bottom:20px;
+}
+
+.sidebar a{
+  display:block;
+  padding:10px;
+  margin-bottom:10px;
+  color:#38bdf8;
+  text-decoration:none;
+  border-radius:8px;
+}
+
+.sidebar a:hover{
+  background:#1e293b;
+}
+
+/* MAIN */
+.main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+
+/* TOPBAR */
+.topbar{
+  padding:15px 20px;
+  background:#111827;
+  display:flex;
+  justify-content:space-between;
+}
+
+/* CONTENT */
+.content{
+  padding:20px;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns: 2fr 1fr;
+  gap:15px;
+  margin-bottom:15px;
+}
+
+/* CARD */
+.card{
+  background:#111827;
+  padding:15px;
+  border-radius:12px;
+}
+
+/* INPUT */
+input{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#0f172a;
+  color:white;
+}
+
+/* BUTTON */
+button{
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#38bdf8;
+  cursor:pointer;
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:10px;
+}
+
+.stat{
+  flex:1;
+  background:#1e293b;
+  padding:15px;
+  border-radius:10px;
+  text-align:center;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td{
+  padding:10px;
+  border-bottom:1px solid #2d3748;
+}
+
+th{
+  color:#38bdf8;
+}
+
+/* ACTION */
+.edit{background:#22c55e;}
+.del{background:#ef4444;}
+
+/* MOBILE */
+@media(max-width:900px){
+  .sidebar{display:none;}
+  .grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>📊 Panel</h2>
+  <a href="#">Dashboard</a>
+  <a href="#">Projects</a>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <h3>Dashboard</h3>
+    <button onclick="logout()" style="background:#ef4444;">Logout</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- GRID -->
+    <div class="grid">
+
+      <!-- ADD -->
+      <div class="card">
+        <h3>Add Project</h3>
+        <input id="user" placeholder="Username">
+        <input id="name" placeholder="Project">
+        <input id="link" placeholder="Link">
+        <button onclick="add()">Add</button>
       </div>
 
-      <div class="stat">
-        <h2 id="totalUsers">0</h2>
-        <p>Users</p>
+      <!-- STATS -->
+      <div class="card">
+        <h3>Stats</h3>
+        <div class="stats">
+          <div class="stat">
+            <h2 id="totalProjects">0</h2>
+            <p>Projects</p>
+          </div>
+          <div class="stat">
+            <h2 id="totalUsers">0</h2>
+            <p>Users</p>
+          </div>
+        </div>
       </div>
+
     </div>
-  </div>
 
-  <!-- ✅ ADD PROJECT AFTER -->
-  <div class="card">
-    <h3>➕ Add Project</h3>
+    <!-- SEARCH -->
+    <div class="card">
+      🔍 <input id="search" oninput="render()" placeholder="Search">
+    </div>
 
-    <input id="user" placeholder="Username">
-    <input id="name" placeholder="Project name">
-    <input id="link" placeholder="Project link">
-    <button onclick="add()">Add</button>
-  </div>
+    <!-- TABLE -->
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table"></tbody>
+      </table>
+    </div>
 
-  <!-- SEARCH -->
-  <div class="card">
-    🔍 <input id="search" oninput="render()" placeholder="Search by username">
-  </div>
-
-  <!-- TABLE -->
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>Username</th>
-          <th>Project</th>
-          <th>Link</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="table"></tbody>
-    </table>
   </div>
 
 </div>
+
+<script>
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
+}
+
+function save(data){
+  localStorage.setItem("projects", JSON.stringify(data));
+}
+
+function add(){
+  let data = getData();
+  let user = userInput.value;
+  let name = nameInput.value;
+  let link = linkInput.value;
+
+  if(!user || !name || !link) return alert("Fill all");
+
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
+
+  data.push({user,name,link});
+  save(data);
+
+  userInput.value="";
+  nameInput.value="";
+  linkInput.value="";
+
+  render();
+}
+
+function del(i){
+  let d = getData();
+  d.splice(i,1);
+  save(d);
+  render();
+}
+
+function edit(i){
+  let d = getData();
+  let u = prompt("User", d[i].user);
+  let n = prompt("Project", d[i].name);
+  let l = prompt("Link", d[i].link);
+
+  if(u && n && l){
+    d[i]={user:u,name:n,link:l};
+    save(d);
+    render();
+  }
+}
+
+function render(){
+  let d = getData();
+  let s = search.value.toLowerCase();
+
+  table.innerHTML="";
+
+  let f = d.filter(x=>x.user.toLowerCase().includes(s));
+
+  totalProjects.innerText = d.length;
+  totalUsers.innerText = [...new Set(d.map(x=>x.user))].length;
+
+  f.forEach((p,i)=>{
+    table.innerHTML += `
+    <tr>
+      <td>${p.user}</td>
+      <td>${p.name}</td>
+      <td><a href="${p.link}" target="_blank">${p.link}</a></td>
+      <td>
+        <button class="edit" onclick="edit(${i})">Edit</button>
+        <button class="del" onclick="del(${i})">Delete</button>
+      </td>
+    </tr>`;
+  });
+}
+
+function logout(){
+  localStorage.removeItem("user");
+  location="index.html";
+}
+
+render();
+</script>
+
+</body>
+</html>
