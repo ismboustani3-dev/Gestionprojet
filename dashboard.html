@@ -2,17 +2,40 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Table</title>
+<title>Pro Dashboard</title>
 
 <style>
 body{
   margin:0;
   font-family:Arial;
-  background:#0a0f1c;
+  background:#0b1220;
   color:white;
+}
+
+/* TOP BAR */
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:15px 20px;
+  background:#111827;
+}
+
+.logout{
+  background:#ef4444;
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+}
+
+/* CONTAINER */
+.container{
   padding:20px;
 }
 
+/* FORM */
 input{
   padding:10px;
   margin:5px;
@@ -51,7 +74,7 @@ th{
   color:#38bdf8;
 }
 
-/* buttons */
+/* ACTIONS */
 .edit{
   background:#22c55e;
   color:white;
@@ -74,9 +97,29 @@ th{
 
 <body>
 
-<h2>📊 Projects Table</h2>
+<script>
+let user = localStorage.getItem("user");
 
-<!-- ADD -->
+if(!user){
+  window.location.href="index.html";
+}
+</script>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <h3>📊 Dashboard</h3>
+
+  <div>
+    👤 <span id="username"></span>
+    <button class="logout" onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+<h3>➕ Add Project</h3>
+
 <input id="user" placeholder="Username">
 <input id="name" placeholder="Project name">
 <input id="link" placeholder="Project link">
@@ -87,16 +130,20 @@ th{
   <thead>
     <tr>
       <th>Username</th>
-      <th>Project Name</th>
+      <th>Project</th>
       <th>Link</th>
       <th>Actions</th>
     </tr>
   </thead>
 
-  <tbody id="tableBody"></tbody>
+  <tbody id="table"></tbody>
 </table>
 
+</div>
+
 <script>
+
+document.getElementById("username").innerText = user;
 
 /* DATA */
 function getData(){
@@ -111,56 +158,58 @@ function save(data){
 function add(){
   let data = getData();
 
-  let user = document.getElementById("user").value;
-  let name = document.getElementById("name").value;
-  let link = document.getElementById("link").value;
+  let u = document.getElementById("user").value;
+  let n = document.getElementById("name").value;
+  let l = document.getElementById("link").value;
 
-  if(!user || !name || !link){
-    return alert("Fill all fields");
+  if(!u || !n || !l) return alert("Fill all fields");
+
+  if(!l.startsWith("http")){
+    l = "https://" + l;
   }
 
-  // fix link
-  if(!link.startsWith("http")){
-    link = "https://" + link;
-  }
-
-  data.push({user, name, link});
+  data.push({user:u, name:n, link:l});
   save(data);
   render();
 }
 
 /* DELETE */
-function del(index){
+function del(i){
   let data = getData();
-  data.splice(index,1);
+  data.splice(i,1);
   save(data);
   render();
 }
 
 /* EDIT */
-function edit(index){
+function edit(i){
   let data = getData();
 
-  let u = prompt("Username", data[index].user);
-  let n = prompt("Project name", data[index].name);
-  let l = prompt("Link", data[index].link);
+  let u = prompt("Username", data[i].user);
+  let n = prompt("Project", data[i].name);
+  let l = prompt("Link", data[i].link);
 
   if(u && n && l){
-
     if(!l.startsWith("http")){
       l = "https://" + l;
     }
 
-    data[index] = {user:u, name:n, link:l};
+    data[i] = {user:u, name:n, link:l};
     save(data);
     render();
   }
 }
 
-/* RENDER TABLE */
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+}
+
+/* RENDER */
 function render(){
   let data = getData();
-  let table = document.getElementById("tableBody");
+  let table = document.getElementById("table");
 
   table.innerHTML = "";
 
@@ -169,7 +218,7 @@ function render(){
       <tr>
         <td>${p.user}</td>
         <td>${p.name}</td>
-        <td><a href="${p.link}" target="_blank">${p.link}</a></td>
+        <td><a href="${p.link}" target="_blank">Open</a></td>
         <td>
           <button class="edit" onclick="edit(${i})">Edit</button>
           <button class="del" onclick="del(${i})">Delete</button>
