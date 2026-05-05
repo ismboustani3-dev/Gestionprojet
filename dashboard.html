@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Dashboard Pro Dynamic</title>
 
 <style>
 body{
@@ -20,11 +20,9 @@ body{
   background: rgba(17,24,39,0.8);
   backdrop-filter: blur(10px);
   padding:20px;
-  border-right:1px solid rgba(255,255,255,0.05);
 }
 
 .sidebar h2{ color:#38bdf8; }
-.sidebar p{ opacity:0.6; font-size:13px; }
 
 /* MAIN */
 .main{
@@ -40,7 +38,6 @@ body{
   padding:15px;
   background: rgba(17,24,39,0.6);
   border-radius:12px;
-  backdrop-filter: blur(10px);
 }
 
 /* INPUTS */
@@ -49,22 +46,27 @@ input,button{
   margin:5px;
   border:none;
   border-radius:10px;
+  transition:0.2s;
 }
 
 input{
   background:#111827;
   color:white;
-  outline:none;
 }
 
 input:focus{
   box-shadow:0 0 10px #38bdf8;
+  transform:scale(1.02);
 }
 
 button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
+}
+
+button:hover{
+  transform:scale(1.05);
 }
 
 /* SEARCH */
@@ -86,6 +88,7 @@ button{
   border-radius:12px;
   background: rgba(17,24,39,0.7);
   color:#38bdf8;
+  transition:0.3s;
 }
 
 /* GRID */
@@ -101,6 +104,11 @@ button{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(56,189,248,0.15);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-6px);
 }
 
 /* TABLE */
@@ -121,14 +129,22 @@ a{
   text-decoration:none;
 }
 
+/* ACTIONS */
 .delete{ color:#ef4444; cursor:pointer; margin-left:6px; }
 .edit{ color:#facc15; cursor:pointer; margin-left:6px; }
 
-/* CHART */
-canvas{
-  background: rgba(17,24,39,0.6);
-  border-radius:12px;
-  margin-top:10px;
+/* TOAST */
+#toast{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#38bdf8;
+  color:#0a0f1c;
+  padding:10px 15px;
+  border-radius:10px;
+  display:none;
+  font-weight:bold;
+  transition:0.3s;
 }
 </style>
 </head>
@@ -137,13 +153,12 @@ canvas{
 
 <div class="sidebar">
   <h2>⚡ Dashboard</h2>
-  <p>Projects Manager</p>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Dashboard</h3>
+    <h3>📊 Dynamic Dashboard</h3>
     <button onclick="logout()">Logout</button>
   </div>
 
@@ -164,19 +179,19 @@ canvas{
   <!-- SEARCH -->
   <input id="search" placeholder="🔍 Search..." oninput="render()">
 
-  <!-- CHART -->
-  <canvas id="chart" width="400" height="120"></canvas>
-
   <!-- USERS -->
   <div id="users" class="users"></div>
 
 </div>
 
+<!-- TOAST -->
+<div id="toast"></div>
+
 <script>
 
 /* AUTH */
 if(localStorage.getItem("auth") !== "true"){
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 
 /* DATA */
@@ -184,140 +199,116 @@ function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-function save(data){
-  localStorage.setItem("projects", JSON.stringify(data));
+function save(d){
+  localStorage.setItem("projects",JSON.stringify(d));
+}
+
+/* TOAST */
+function showToast(msg){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  t.style.opacity="1";
+
+  setTimeout(()=>{
+    t.style.opacity="0";
+    setTimeout(()=>t.style.display="none",300);
+  },1500);
 }
 
 /* ADD */
 function add(){
-  let data = getData();
+  let d=getData();
 
-  let user = document.getElementById("user").value;
-  let name = document.getElementById("name").value;
-  let link = document.getElementById("link").value;
+  let user=document.getElementById("user").value;
+  let name=document.getElementById("name").value;
+  let link=document.getElementById("link").value;
 
-  if(!user || !name || !link) return alert("Fill all");
+  if(!user||!name||!link) return alert("fill all");
 
-  if(!link.startsWith("http")) link = "https://" + link;
+  if(!link.startsWith("http")) link="https://"+link;
 
-  data.push({
-    id: Date.now(),
-    user,
-    name,
-    link
-  });
-
-  save(data);
+  d.push({id:Date.now(),user,name,link});
+  save(d);
 
   document.getElementById("user").value="";
   document.getElementById("name").value="";
   document.getElementById("link").value="";
 
+  showToast("✅ Project added!");
   render();
 }
 
 /* DELETE PROJECT */
 function removeProject(id){
-  let data = getData().filter(p => p.id !== id);
-  save(data);
+  let d=getData().filter(x=>x.id!==id);
+  save(d);
+  showToast("🗑 Deleted!");
   render();
 }
 
 /* DELETE USER */
 function removeUser(user){
   if(!confirm("Delete user " + user + " ?")) return;
-  let data = getData().filter(p => p.user !== user);
-  save(data);
+
+  let d=getData().filter(x=>x.user!==user);
+  save(d);
+  showToast("👤 User deleted!");
   render();
 }
 
 /* EDIT */
 function editProject(id){
-  let data = getData();
-  let p = data.find(x => x.id === id);
+  let d=getData();
+  let p=d.find(x=>x.id===id);
 
-  let newName = prompt("Edit name:", p.name);
-  if(newName) p.name = newName;
+  let n=prompt("Edit name:",p.name);
+  if(n) p.name=n;
 
-  let newLink = prompt("Edit link:", p.link);
-  if(newLink){
-    if(!newLink.startsWith("http")) newLink = "https://" + newLink;
-    p.link = newLink;
+  let l=prompt("Edit link:",p.link);
+  if(l){
+    if(!l.startsWith("http")) l="https://"+l;
+    p.link=l;
   }
 
-  save(data);
+  save(d);
+  showToast("✏️ Updated!");
   render();
 }
 
 /* STATS */
-function updateStats(data){
+function updateStats(d){
   document.getElementById("totalUsers").innerText =
-    new Set(data.map(p=>p.user)).size;
+    new Set(d.map(p=>p.user)).size;
 
   document.getElementById("totalProjects").innerText =
-    data.length;
-}
-
-/* CHART */
-function drawChart(data){
-  let c = document.getElementById("chart");
-  let ctx = c.getContext("2d");
-
-  ctx.clearRect(0,0,c.width,c.height);
-
-  let map = {};
-
-  data.forEach(p=>{
-    map[p.user] = (map[p.user] || 0) + 1;
-  });
-
-  let keys = Object.keys(map);
-  let max = Math.max(...Object.values(map), 1);
-
-  keys.forEach((k,i)=>{
-    let h = (map[k] / max) * 100;
-
-    ctx.fillStyle = "#38bdf8";
-    ctx.fillRect(i*60,110-h,40,h);
-
-    ctx.fillStyle = "white";
-    ctx.fillText(k, i*60, 115);
-  });
+    d.length;
 }
 
 /* RENDER */
 function render(){
-  let data = getData();
+  let d=getData();
 
-  let q = document.getElementById("search").value?.toLowerCase() || "";
+  let q=document.getElementById("search").value?.toLowerCase()||"";
 
-  let filtered = data.filter(p =>
+  let f=d.filter(p=>
     p.user.toLowerCase().includes(q) ||
     p.name.toLowerCase().includes(q)
   );
 
-  let container = document.getElementById("users");
-  container.innerHTML = "";
+  let box=document.getElementById("users");
+  box.innerHTML="";
 
-  if(filtered.length === 0){
-    container.innerHTML = "<p>No data</p>";
-    updateStats(data);
-    drawChart(data);
-    return;
-  }
+  let grouped={};
 
-  let grouped = {};
-
-  filtered.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user] = [];
+  f.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user]=[];
     grouped[p.user].push(p);
   });
 
-  for(let user in grouped){
+  for(let u in grouped){
 
-    let projects = grouped[user];
-
-    let rows = projects.map(p=>`
+    let rows=grouped[u].map(p=>`
       <tr>
         <td>
           ${p.name}
@@ -335,19 +326,19 @@ function render(){
       </tr>
     `).join("");
 
-    container.innerHTML += `
+    box.innerHTML+=`
       <div class="card">
 
         <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3>👤 ${user}</h3>
+          <h3>👤 ${u}</h3>
 
-          <button onclick="removeUser('${user}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
+          <button onclick="removeUser('${u}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
             Delete User
           </button>
         </div>
 
         <div style="font-size:12px;opacity:0.6;margin-bottom:8px;">
-          📁 ${projects.length} projects
+          📁 ${grouped[u].length} projects
         </div>
 
         <table>
@@ -359,12 +350,12 @@ function render(){
     `;
   }
 
-  updateStats(data);
-  drawChart(data);
+  updateStats(d);
 }
 
 render();
 
+/* LOGOUT */
 function logout(){
   localStorage.clear();
   location.href="index.html";
