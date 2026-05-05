@@ -39,7 +39,7 @@ body{
   padding:20px;
 }
 
-/* TOPBAR */
+/* TOP */
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -137,6 +137,24 @@ a{
   color:#ef4444;
   cursor:pointer;
 }
+
+/* USER HEADER */
+.userHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.userBtn{
+  background:#ef4444;
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  color:white;
+  cursor:pointer;
+  font-size:12px;
+}
 </style>
 </head>
 
@@ -147,8 +165,8 @@ a{
   <h2>⚡ Dashboard</h2>
   <p>Projects Manager</p>
   <p>• Add Projects</p>
-  <p>• Manage Users</p>
-  <p>• Local Storage DB</p>
+  <p>• Delete Users</p>
+  <p>• Local DB</p>
 </div>
 
 <!-- MAIN -->
@@ -174,12 +192,11 @@ a{
 
 <script>
 
-/* 🔐 AUTH CHECK */
+/* AUTH */
 if(localStorage.getItem("auth") !== "true"){
   window.location.href = "index.html";
 }
 
-/* USER NAME */
 document.getElementById("username").innerText =
 localStorage.getItem("user") || "User";
 
@@ -225,9 +242,18 @@ function add(){
   render();
 }
 
-/* DELETE */
-function remove(id){
+/* DELETE PROJECT */
+function removeProject(id){
   let data = getData().filter(p => p.id !== id);
+  save(data);
+  render();
+}
+
+/* DELETE USER */
+function removeUser(user){
+  if(!confirm("Delete user " + user + " ?")) return;
+
+  let data = getData().filter(p => p.user !== user);
   save(data);
   render();
 }
@@ -238,7 +264,7 @@ function logout(){
   window.location.href = "index.html";
 }
 
-/* RENDER FIX */
+/* RENDER */
 function render(){
   let data = getData();
   let container = document.getElementById("users");
@@ -246,11 +272,7 @@ function render(){
   container.innerHTML = "";
 
   if(!data || data.length === 0){
-    container.innerHTML = `
-      <p style="opacity:0.6;text-align:center;width:100%">
-        No projects yet 😴
-      </p>
-    `;
+    container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects yet 😴</p>`;
     return;
   }
 
@@ -269,13 +291,18 @@ function render(){
       <tr>
         <td>${p.name}</td>
         <td><a href="${p.link}" target="_blank">open</a></td>
-        <td><span class="delete" onclick="remove(${p.id})">delete</span></td>
+        <td><span class="delete" onclick="removeProject(${p.id})">delete</span></td>
       </tr>
     `).join("");
 
     container.innerHTML += `
       <div class="card">
-        <h3>👤 ${user}</h3>
+        <div class="userHeader">
+          <h3>👤 ${user}</h3>
+          <button class="userBtn" onclick="removeUser('${user}')">
+            Delete User
+          </button>
+        </div>
 
         <table>
           <tr>
