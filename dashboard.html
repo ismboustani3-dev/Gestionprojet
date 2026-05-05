@@ -25,7 +25,6 @@ body{
 
 .sidebar h2{
   color:#38bdf8;
-  margin-bottom:10px;
 }
 
 .sidebar p{
@@ -48,7 +47,7 @@ body{
   background: rgba(17,24,39,0.6);
   border-radius:12px;
   backdrop-filter: blur(10px);
-  margin-bottom:20px;
+  margin-bottom:15px;
 }
 
 .logout{
@@ -58,6 +57,24 @@ body{
   border-radius:10px;
   color:white;
   cursor:pointer;
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:15px;
+}
+
+.stat{
+  background: rgba(17,24,39,0.6);
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid rgba(56,189,248,0.15);
+  color:#38bdf8;
+  font-size:14px;
+  backdrop-filter: blur(10px);
 }
 
 /* INPUTS */
@@ -95,7 +112,7 @@ button:hover{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:15px;
-  margin-top:20px;
+  margin-top:15px;
 }
 
 /* CARD */
@@ -138,12 +155,11 @@ a{
   cursor:pointer;
 }
 
-/* USER HEADER */
 .userHeader{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
 
 .userBtn{
@@ -164,9 +180,7 @@ a{
 <div class="sidebar">
   <h2>⚡ Dashboard</h2>
   <p>Projects Manager</p>
-  <p>• Add Projects</p>
-  <p>• Delete Users</p>
-  <p>• Local DB</p>
+  <p>Analytics Panel</p>
 </div>
 
 <!-- MAIN -->
@@ -175,6 +189,12 @@ a{
   <div class="topbar">
     <h3>📊 Welcome <span id="username"></span></h3>
     <button class="logout" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
   </div>
 
   <!-- FORM -->
@@ -264,6 +284,17 @@ function logout(){
   window.location.href = "index.html";
 }
 
+/* STATS */
+function updateStats(){
+  let data = getData();
+
+  let users = new Set(data.map(p => p.user)).size;
+  let projects = data.length;
+
+  document.getElementById("totalUsers").innerText = users;
+  document.getElementById("totalProjects").innerText = projects;
+}
+
 /* RENDER */
 function render(){
   let data = getData();
@@ -273,6 +304,7 @@ function render(){
 
   if(!data || data.length === 0){
     container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects yet 😴</p>`;
+    updateStats();
     return;
   }
 
@@ -297,11 +329,16 @@ function render(){
 
     container.innerHTML += `
       <div class="card">
+
         <div class="userHeader">
           <h3>👤 ${user}</h3>
           <button class="userBtn" onclick="removeUser('${user}')">
             Delete User
           </button>
+        </div>
+
+        <div style="opacity:0.6;font-size:12px;margin-bottom:8px;">
+          📁 ${projects.length} projects
         </div>
 
         <table>
@@ -315,6 +352,8 @@ function render(){
       </div>
     `;
   }
+
+  updateStats();
 }
 
 render();
