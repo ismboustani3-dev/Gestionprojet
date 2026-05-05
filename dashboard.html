@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Level 2</title>
+<title>projets</title>
 
 <style>
 body{
@@ -36,7 +36,6 @@ body{
   padding:15px;
   background: rgba(17,24,39,0.6);
   border-radius:12px;
-  backdrop-filter: blur(10px);
 }
 
 /* INPUTS */
@@ -50,7 +49,6 @@ input,button{
 input{
   background:#111827;
   color:white;
-  outline:none;
 }
 
 button{
@@ -70,15 +68,13 @@ button{
   display:flex;
   gap:10px;
   margin:15px 0;
-  flex-wrap:wrap;
 }
 
 .stat{
   flex:1;
-  min-width:160px;
   padding:12px;
-  background: rgba(17,24,39,0.7);
   border-radius:12px;
+  background: rgba(17,24,39,0.7);
   color:#38bdf8;
 }
 
@@ -118,16 +114,16 @@ a{
 
 .delete,.edit{
   cursor:pointer;
-  margin-left:8px;
 }
 
-.delete{ color:#ef4444; }
-.edit{ color:#facc15; }
+.delete{color:#ef4444;}
+.edit{color:#facc15;}
 
-/* LINK PREVIEW */
-.preview{
-  font-size:12px;
-  opacity:0.6;
+/* CHART */
+canvas{
+  background: rgba(17,24,39,0.6);
+  border-radius:12px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -135,14 +131,13 @@ a{
 <body>
 
 <div class="sidebar">
-  <h2>⚡ Level 2</h2>
+  <h2>⚡ Level 3</h2>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Dashboard</h3>
-    <button onclick="logout()">Logout</button>
+    <h3>📊 SaaS Dashboard</h3>
   </div>
 
   <!-- STATS -->
@@ -162,16 +157,15 @@ a{
   <!-- SEARCH -->
   <input class="search" id="search" placeholder="🔍 search..." oninput="render()">
 
+  <!-- CHART -->
+  <canvas id="chart" width="400" height="120"></canvas>
+
   <!-- USERS -->
   <div id="users" class="users"></div>
 
 </div>
 
 <script>
-
-if(localStorage.getItem("auth") !== "true"){
-  location.href="index.html";
-}
 
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
@@ -185,11 +179,11 @@ function save(d){
 function add(){
   let d=getData();
 
-  let user=user=document.getElementById("user").value;
+  let user=document.getElementById("user").value;
   let name=document.getElementById("name").value;
   let link=document.getElementById("link").value;
 
-  if(!user||!name||!link) return alert("fill");
+  if(!user||!name||!link) return;
 
   if(!link.startsWith("http")) link="https://"+link;
 
@@ -205,24 +199,38 @@ function del(id){
   render();
 }
 
-/* EDIT */
-function edit(id){
-  let d=getData();
-  let p=d.find(x=>x.id===id);
-
-  let n=prompt("edit name",p.name);
-  if(n) p.name=n;
-
-  save(d);
-  render();
-}
-
 /* STATS */
 function stats(data){
   document.getElementById("u").innerText =
     new Set(data.map(x=>x.user)).size;
 
   document.getElementById("p").innerText=data.length;
+}
+
+/* CHART */
+function drawChart(data){
+  let c=document.getElementById("chart");
+  let ctx=c.getContext("2d");
+
+  ctx.clearRect(0,0,c.width,c.height);
+
+  let map={};
+  data.forEach(x=>{
+    map[x.user]=(map[x.user]||0)+1;
+  });
+
+  let keys=Object.keys(map);
+  let max=Math.max(...Object.values(map),1);
+
+  keys.forEach((k,i)=>{
+    let h=(map[k]/max)*100;
+
+    ctx.fillStyle="#38bdf8";
+    ctx.fillRect(i*60,110-h,40,h);
+
+    ctx.fillStyle="white";
+    ctx.fillText(k,i*60,115);
+  });
 }
 
 /* RENDER */
@@ -250,17 +258,10 @@ function render(){
       <tr>
         <td>
           ${p.name}
-          <div class="preview">${p.link}</div>
+          <div style="font-size:11px;opacity:0.6">${p.link}</div>
         </td>
-
-        <td>
-          <a href="${p.link}" target="_blank">open</a>
-        </td>
-
-        <td>
-          <span class="delete" onclick="del(${p.id})">del</span>
-          <span class="edit" onclick="edit(${p.id})">edit</span>
-        </td>
+        <td><a href="${p.link}" target="_blank">open</a></td>
+        <td><span class="delete" onclick="del(${p.id})">del</span></td>
       </tr>
     `).join("");
 
@@ -276,14 +277,10 @@ function render(){
   }
 
   stats(data);
+  drawChart(data);
 }
 
 render();
-
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
-}
 
 </script>
 
