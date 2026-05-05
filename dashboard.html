@@ -2,95 +2,247 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Login</title>
+<title>Dashboard</title>
 
 <style>
 body{
-  margin:0;
   font-family:Arial;
+  margin:0;
   background: radial-gradient(circle at top,#0f172a,#0b1220);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
   color:white;
 }
 
-.box{
-  background: rgba(30,41,59,0.7);
+/* TOP */
+.topbar{
+  padding:18px;
+  background: rgba(17,24,39,0.7);
   backdrop-filter: blur(10px);
-  padding:30px;
-  border-radius:15px;
-  width:320px;
-  border:1px solid rgba(56,189,248,0.2);
-  animation: pop 0.6s ease;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logout{
+  background:#ef4444;
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+
+/* CONTAINER */
+.container{
+  padding:20px;
+}
+
+/* INPUTS */
+input,button{
+  padding:12px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
 }
 
 input{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:none;
-  border-radius:10px;
   background:#111827;
   color:white;
   outline:none;
-  transition:0.3s;
-}
-
-input:focus{
-  box-shadow:0 0 10px #38bdf8;
-  transform:scale(1.03);
 }
 
 button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
-  transition:0.3s;
 }
 
-button:hover{
-  transform:scale(1.05);
+/* GRID */
+.users{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:15px;
+  margin-top:20px;
 }
 
-@keyframes pop{
-  from{opacity:0; transform:scale(0.9);}
-  to{opacity:1; transform:scale(1);}
+/* CARD */
+.card{
+  background: rgba(17,24,39,0.7);
+  backdrop-filter: blur(10px);
+  padding:15px;
+  border-radius:15px;
+  border:1px solid rgba(56,189,248,0.2);
+}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+th{
+  color:#38bdf8;
+}
+
+a{
+  color:#38bdf8;
+  text-decoration:none;
+}
+
+.delete{
+  color:red;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box">
-  <h2>Login 🔐</h2>
+<div class="topbar">
+  <h2>📊 Welcome <span id="username"></span></h2>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
 
-  <input id="user" placeholder="Username">
-  <input id="pass" type="password" placeholder="Password">
+<div class="container">
 
-  <button onclick="login()">Login</button>
+  <!-- FORM -->
+  <div>
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
+    <button onclick="add()">Add</button>
+  </div>
+
+  <div id="users" class="users"></div>
+
 </div>
 
 <script>
-function login(){
-  let user = document.getElementById("user").value;
-  let pass = document.getElementById("pass").value;
 
-  if(!user || !pass){
+/* ✅ AUTH CHECK FIX */
+let auth = localStorage.getItem("auth");
+
+if(!auth || auth !== "true"){
+  window.location.href = "index.html";
+}
+
+/* show user */
+document.getElementById("username").innerText =
+localStorage.getItem("user") || "User";
+
+/* GET DATA */
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
+}
+
+/* SAVE */
+function save(data){
+  localStorage.setItem("projects", JSON.stringify(data));
+}
+
+/* ADD */
+function add(){
+  let data = getData();
+
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
+
+  if(!user || !name || !link){
     alert("Fill all fields");
     return;
   }
 
-  localStorage.setItem("user", user);
-  localStorage.setItem("auth", "true");
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
 
-  window.location.href = "dashboard.html";
+  data.push({
+    id: Date.now(),
+    user,
+    name,
+    link
+  });
+
+  save(data);
+
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
+
+  render();
 }
+
+/* DELETE */
+function remove(id){
+  let data = getData().filter(p => p.id !== id);
+  save(data);
+  render();
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  window.location.href = "index.html";
+}
+
+/* RENDER FIX (NO EMPTY SCREEN) */
+function render(){
+  let data = getData();
+  let container = document.getElementById("users");
+
+  container.innerHTML = "";
+
+  if(!data || data.length === 0){
+    container.innerHTML = `
+      <p style="opacity:0.6;text-align:center;width:100%">
+        No projects yet 😴
+      </p>
+    `;
+    return;
+  }
+
+  let grouped = {};
+
+  data.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user] = [];
+    grouped[p.user].push(p);
+  });
+
+  for(let user in grouped){
+
+    let projects = grouped[user];
+
+    let rows = projects.map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        <td><a href="${p.link}" target="_blank">open</a></td>
+        <td><span class="delete" onclick="remove(${p.id})">delete</span></td>
+      </tr>
+    `).join("");
+
+    container.innerHTML += `
+      <div class="card">
+        <h3>👤 ${user}</h3>
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
+    `;
+  }
+}
+
+render();
+
 </script>
 
 </body>
