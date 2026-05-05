@@ -111,6 +111,16 @@ button{
   text-align:center;
 }
 
+/* USER STATS */
+.userStat{
+  background:#0f172a;
+  padding:8px;
+  border-radius:8px;
+  margin-top:5px;
+  display:flex;
+  justify-content:space-between;
+}
+
 /* TABLE */
 table{
   width:100%;
@@ -174,16 +184,22 @@ th{
       <!-- STATS -->
       <div class="card">
         <h3>Stats</h3>
+
         <div class="stats">
           <div class="stat">
             <h2 id="totalProjects">0</h2>
             <p>Projects</p>
           </div>
+
           <div class="stat">
             <h2 id="totalUsers">0</h2>
             <p>Users</p>
           </div>
         </div>
+
+        <!-- 👇 USERS PROJECT COUNT -->
+        <div id="usersList"></div>
+
       </div>
 
     </div>
@@ -213,6 +229,7 @@ th{
 </div>
 
 <script>
+
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
@@ -223,9 +240,10 @@ function save(data){
 
 function add(){
   let data = getData();
-  let user = userInput.value;
-  let name = nameInput.value;
-  let link = linkInput.value;
+
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
   if(!user || !name || !link) return alert("Fill all");
 
@@ -236,9 +254,9 @@ function add(){
   data.push({user,name,link});
   save(data);
 
-  userInput.value="";
-  nameInput.value="";
-  linkInput.value="";
+  document.getElementById("user").value="";
+  document.getElementById("name").value="";
+  document.getElementById("link").value="";
 
   render();
 }
@@ -257,6 +275,9 @@ function edit(i){
   let l = prompt("Link", d[i].link);
 
   if(u && n && l){
+    if(!l.startsWith("http")){
+      l = "https://" + l;
+    }
     d[i]={user:u,name:n,link:l};
     save(d);
     render();
@@ -265,16 +286,39 @@ function edit(i){
 
 function render(){
   let d = getData();
-  let s = search.value.toLowerCase();
+  let s = document.getElementById("search").value.toLowerCase();
 
+  let table = document.getElementById("table");
   table.innerHTML="";
 
-  let f = d.filter(x=>x.user.toLowerCase().includes(s));
+  let filtered = d.filter(x=>x.user.toLowerCase().includes(s));
 
-  totalProjects.innerText = d.length;
-  totalUsers.innerText = [...new Set(d.map(x=>x.user))].length;
+  /* GLOBAL STATS */
+  document.getElementById("totalProjects").innerText = d.length;
+  document.getElementById("totalUsers").innerText =
+    [...new Set(d.map(x=>x.user))].length;
 
-  f.forEach((p,i)=>{
+  /* USER PROJECT COUNT 🔥 */
+  let usersCount = {};
+
+  d.forEach(p=>{
+    usersCount[p.user] = (usersCount[p.user] || 0) + 1;
+  });
+
+  let usersList = document.getElementById("usersList");
+  usersList.innerHTML = "";
+
+  for(let user in usersCount){
+    usersList.innerHTML += `
+      <div class="userStat">
+        <span>${user}</span>
+        <span>${usersCount[user]} projects</span>
+      </div>
+    `;
+  }
+
+  /* TABLE */
+  filtered.forEach((p,i)=>{
     table.innerHTML += `
     <tr>
       <td>${p.user}</td>
@@ -294,6 +338,7 @@ function logout(){
 }
 
 render();
+
 </script>
 
 </body>
