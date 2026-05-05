@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Dashboard Level 2</title>
 
 <style>
 body{
@@ -20,16 +20,6 @@ body{
   background: rgba(17,24,39,0.8);
   backdrop-filter: blur(10px);
   padding:20px;
-  border-right:1px solid rgba(255,255,255,0.05);
-}
-
-.sidebar h2{
-  color:#38bdf8;
-}
-
-.sidebar p{
-  opacity:0.6;
-  font-size:13px;
 }
 
 /* MAIN */
@@ -51,7 +41,7 @@ body{
 
 /* INPUTS */
 input,button{
-  padding:12px;
+  padding:10px;
   margin:5px;
   border:none;
   border-radius:10px;
@@ -63,15 +53,16 @@ input{
   outline:none;
 }
 
-input:focus{
-  box-shadow:0 0 10px #38bdf8;
-  transform:scale(1.03);
-}
-
 button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
+}
+
+/* SEARCH */
+.search{
+  width:100%;
+  margin:10px 0;
 }
 
 /* STATS */
@@ -86,9 +77,8 @@ button{
   flex:1;
   min-width:160px;
   padding:12px;
-  border-radius:12px;
   background: rgba(17,24,39,0.7);
-  border:1px solid rgba(56,189,248,0.15);
+  border-radius:12px;
   color:#38bdf8;
 }
 
@@ -104,12 +94,6 @@ button{
   background: rgba(17,24,39,0.6);
   padding:15px;
   border-radius:15px;
-  border:1px solid rgba(56,189,248,0.15);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-5px);
 }
 
 /* TABLE */
@@ -127,25 +111,23 @@ th{
   color:#38bdf8;
 }
 
-/* LINK STYLE */
 a{
   color:#38bdf8;
   text-decoration:none;
 }
 
-a:hover{
-  text-decoration:underline;
-}
-
-.delete{
-  color:#ef4444;
+.delete,.edit{
   cursor:pointer;
+  margin-left:8px;
 }
 
-.userHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.delete{ color:#ef4444; }
+.edit{ color:#facc15; }
+
+/* LINK PREVIEW */
+.preview{
+  font-size:12px;
+  opacity:0.6;
 }
 </style>
 </head>
@@ -153,21 +135,20 @@ a:hover{
 <body>
 
 <div class="sidebar">
-  <h2>⚡ Dashboard</h2>
-  <p>Projects Manager</p>
+  <h2>⚡ Level 2</h2>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Welcome <span id="username"></span></h3>
+    <h3>📊 Dashboard</h3>
     <button onclick="logout()">Logout</button>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
-    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
+    <div class="stat">👤 Users: <span id="u">0</span></div>
+    <div class="stat">📁 Projects: <span id="p">0</span></div>
   </div>
 
   <!-- FORM -->
@@ -178,6 +159,9 @@ a:hover{
     <button onclick="add()">Add</button>
   </div>
 
+  <!-- SEARCH -->
+  <input class="search" id="search" placeholder="🔍 search..." oninput="render()">
+
   <!-- USERS -->
   <div id="users" class="users"></div>
 
@@ -185,157 +169,121 @@ a:hover{
 
 <script>
 
-/* AUTH */
 if(localStorage.getItem("auth") !== "true"){
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 
-document.getElementById("username").innerText =
-localStorage.getItem("user") || "User";
-
-/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-function save(data){
-  localStorage.setItem("projects", JSON.stringify(data));
+function save(d){
+  localStorage.setItem("projects",JSON.stringify(d));
 }
 
 /* ADD */
 function add(){
-  let data = getData();
+  let d=getData();
 
-  let user = document.getElementById("user").value;
-  let name = document.getElementById("name").value;
-  let link = document.getElementById("link").value;
+  let user=user=document.getElementById("user").value;
+  let name=document.getElementById("name").value;
+  let link=document.getElementById("link").value;
 
-  if(!user || !name || !link){
-    alert("Fill all fields");
-    return;
-  }
+  if(!user||!name||!link) return alert("fill");
 
-  if(!link.startsWith("http")){
-    link = "https://" + link;
-  }
+  if(!link.startsWith("http")) link="https://"+link;
 
-  data.push({
-    id: Date.now(),
-    user,
-    name,
-    link
-  });
-
-  save(data);
-
-  document.getElementById("user").value="";
-  document.getElementById("name").value="";
-  document.getElementById("link").value="";
-
+  d.push({id:Date.now(),user,name,link});
+  save(d);
   render();
 }
 
-/* DELETE PROJECT */
-function removeProject(id){
-  let data = getData().filter(p => p.id !== id);
-  save(data);
+/* DELETE */
+function del(id){
+  let d=getData().filter(x=>x.id!==id);
+  save(d);
   render();
 }
 
-/* DELETE USER */
-function removeUser(user){
-  if(!confirm("Delete user " + user + " ?")) return;
+/* EDIT */
+function edit(id){
+  let d=getData();
+  let p=d.find(x=>x.id===id);
 
-  let data = getData().filter(p => p.user !== user);
-  save(data);
+  let n=prompt("edit name",p.name);
+  if(n) p.name=n;
+
+  save(d);
   render();
-}
-
-/* LOGOUT */
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
 }
 
 /* STATS */
-function updateStats(){
-  let data = getData();
+function stats(data){
+  document.getElementById("u").innerText =
+    new Set(data.map(x=>x.user)).size;
 
-  document.getElementById("totalUsers").innerText =
-    new Set(data.map(p=>p.user)).size;
-
-  document.getElementById("totalProjects").innerText =
-    data.length;
+  document.getElementById("p").innerText=data.length;
 }
 
 /* RENDER */
 function render(){
-  let data = getData();
-  let container = document.getElementById("users");
+  let data=getData();
+  let q=document.getElementById("search").value?.toLowerCase()||"";
 
-  container.innerHTML = "";
+  let f=data.filter(x=>
+    x.user.toLowerCase().includes(q) ||
+    x.name.toLowerCase().includes(q)
+  );
 
-  if(data.length === 0){
-    container.innerHTML = `<p style="opacity:0.6;text-align:center;width:100%">No projects 😴</p>`;
-    updateStats();
-    return;
-  }
+  let box=document.getElementById("users");
+  box.innerHTML="";
 
-  let grouped = {};
-
-  data.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user] = [];
-    grouped[p.user].push(p);
+  let grouped={};
+  f.forEach(x=>{
+    if(!grouped[x.user]) grouped[x.user]=[];
+    grouped[x.user].push(x);
   });
 
-  for(let user in grouped){
+  for(let u in grouped){
 
-    let projects = grouped[user];
-
-    let rows = projects.map(p=>`
+    let rows=grouped[u].map(p=>`
       <tr>
-        <td>${p.name}</td>
-
-        <!-- ✅ LINK FIX (REAL CLICKABLE LINK) -->
         <td>
-          <a href="${p.link}" target="_blank">
-            ${p.link}
-          </a>
+          ${p.name}
+          <div class="preview">${p.link}</div>
         </td>
 
         <td>
-          <span class="delete" onclick="removeProject(${p.id})">delete</span>
+          <a href="${p.link}" target="_blank">open</a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="del(${p.id})">del</span>
+          <span class="edit" onclick="edit(${p.id})">edit</span>
         </td>
       </tr>
     `).join("");
 
-    container.innerHTML += `
+    box.innerHTML+=`
       <div class="card">
-
-        <div class="userHeader">
-          <h3>👤 ${user}</h3>
-          <button onclick="removeUser('${user}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
-            Delete User
-          </button>
-        </div>
-
+        <h3>👤 ${u}</h3>
         <table>
-          <tr>
-            <th>Project</th>
-            <th>Link</th>
-            <th>Action</th>
-          </tr>
+          <tr><th>Project</th><th>Link</th><th></th></tr>
           ${rows}
         </table>
-
       </div>
     `;
   }
 
-  updateStats();
+  stats(data);
 }
 
 render();
+
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
 
 </script>
 
