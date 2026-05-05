@@ -28,7 +28,7 @@ body{
 
 /* CONTAINER */
 .container{
-  padding:20px;
+  padding:15px 20px;
   max-width:1100px;
   margin:auto;
 }
@@ -41,7 +41,7 @@ body{
   margin-bottom:15px;
 }
 
-/* TITLES */
+/* TITLE */
 h3{
   margin-bottom:10px;
 }
@@ -74,7 +74,7 @@ button{
 .stat{
   flex:1;
   background:#1e293b;
-  padding:20px;
+  padding:15px;
   border-radius:12px;
   text-align:center;
 }
@@ -95,7 +95,7 @@ th{
   color:#38bdf8;
 }
 
-/* ACTION BUTTONS */
+/* ACTIONS */
 .edit{
   background:#22c55e;
   padding:5px 8px;
@@ -129,7 +129,7 @@ a{
 
 <div class="container">
 
-  <!-- 🔥 STATS FIRST -->
+  <!-- ✅ STATS (فوق) -->
   <div class="card">
     <h3>📊 Stats</h3>
 
@@ -146,7 +146,7 @@ a{
     </div>
   </div>
 
-  <!-- 🔥 ADD PROJECT -->
+  <!-- ✅ ADD PROJECT -->
   <div class="card">
     <h3>➕ Add Project</h3>
 
@@ -180,7 +180,6 @@ a{
 
 <script>
 
-/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
@@ -189,7 +188,6 @@ function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
 
-/* ADD */
 function add(){
   let data = getData();
 
@@ -215,7 +213,6 @@ function add(){
   render();
 }
 
-/* DELETE */
 function del(i){
   let data = getData();
   data.splice(i,1);
@@ -223,7 +220,6 @@ function del(i){
   render();
 }
 
-/* EDIT */
 function edit(i){
   let data = getData();
 
@@ -242,7 +238,6 @@ function edit(i){
   }
 }
 
-/* RENDER */
 function render(){
   let data = getData();
   let search = document.getElementById("search").value.toLowerCase();
@@ -273,13 +268,11 @@ function render(){
   });
 }
 
-/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   window.location.href="index.html";
 }
 
-/* INIT */
 render();
 
 </script>
