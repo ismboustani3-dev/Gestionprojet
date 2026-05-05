@@ -38,7 +38,7 @@ body{
   padding:20px;
 }
 
-/* TOP */
+/* TOPBAR */
 .topbar{
   display:flex;
   justify-content:space-between;
@@ -62,19 +62,45 @@ body{
 /* STATS */
 .stats{
   display:flex;
-  gap:10px;
+  gap:15px;
   flex-wrap:wrap;
   margin-bottom:15px;
 }
 
-.stat{
-  background: rgba(17,24,39,0.6);
-  padding:10px 14px;
-  border-radius:10px;
+.statCard{
+  flex:1;
+  min-width:180px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  padding:15px;
+  border-radius:15px;
+  background: rgba(17,24,39,0.7);
   border:1px solid rgba(56,189,248,0.15);
-  color:#38bdf8;
-  font-size:14px;
   backdrop-filter: blur(10px);
+  transition:0.3s;
+}
+
+.statCard:hover{
+  transform:translateY(-5px);
+  box-shadow:0 10px 25px rgba(56,189,248,0.2);
+}
+
+.statCard .icon{
+  font-size:24px;
+}
+
+.statCard h4{
+  margin:0;
+  font-size:22px;
+  color:#38bdf8;
+}
+
+.statCard p{
+  margin:0;
+  font-size:12px;
+  opacity:0.6;
 }
 
 /* INPUTS */
@@ -83,7 +109,6 @@ input,button{
   margin:5px;
   border:none;
   border-radius:10px;
-  transition:0.3s;
 }
 
 input{
@@ -93,8 +118,8 @@ input{
 }
 
 input:focus{
-  transform:scale(1.03);
   box-shadow:0 0 10px #38bdf8;
+  transform:scale(1.03);
 }
 
 button{
@@ -127,7 +152,6 @@ button:hover{
 
 .card:hover{
   transform:translateY(-5px);
-  box-shadow:0 10px 25px rgba(56,189,248,0.2);
 }
 
 /* TABLE */
@@ -155,6 +179,7 @@ a{
   cursor:pointer;
 }
 
+/* USER HEADER */
 .userHeader{
   display:flex;
   justify-content:space-between;
@@ -193,8 +218,23 @@ a{
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
-    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
+
+    <div class="statCard">
+      <div class="icon">👤</div>
+      <div>
+        <h4 id="totalUsers">0</h4>
+        <p>Users</p>
+      </div>
+    </div>
+
+    <div class="statCard">
+      <div class="icon">📁</div>
+      <div>
+        <h4 id="totalProjects">0</h4>
+        <p>Projects</p>
+      </div>
+    </div>
+
   </div>
 
   <!-- FORM -->
@@ -349,6 +389,7 @@ function render(){
           </tr>
           ${rows}
         </table>
+
       </div>
     `;
   }
