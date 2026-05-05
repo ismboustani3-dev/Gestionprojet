@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Projects Dashboard</title>
+<title>Dashboard</title>
 
 <style>
 body{
@@ -13,6 +13,7 @@ body{
   display:flex;
 }
 
+/* SIDEBAR */
 .sidebar{
   width:220px;
   height:100vh;
@@ -20,20 +21,13 @@ body{
   padding:20px;
 }
 
-select{
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1e293b;
-  color:white;
-}
-
+/* MAIN */
 .main{
   flex:1;
   padding:20px;
 }
 
+/* INPUTS */
 input{
   padding:10px;
   margin:5px;
@@ -43,6 +37,7 @@ input{
   color:white;
 }
 
+/* BUTTON */
 button{
   padding:10px 14px;
   border:none;
@@ -51,6 +46,7 @@ button{
   cursor:pointer;
 }
 
+/* STATS */
 .stats{
   display:flex;
   gap:15px;
@@ -65,6 +61,7 @@ button{
   text-align:center;
 }
 
+/* CARD */
 .card{
   background:#1e293b;
   padding:12px;
@@ -72,6 +69,7 @@ button{
   border-radius:10px;
 }
 
+/* BTN */
 .btn{
   margin-top:10px;
   padding:5px 10px;
@@ -94,14 +92,24 @@ button{
 <body>
 
 <script>
-if(!localStorage.getItem("user")){
+let currentUser = localStorage.getItem("user");
+
+if(!currentUser){
   window.location.href="index.html";
 }
 </script>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h3>👤 Users</h3>
+  <h3>👤 Hello, <span id="u"></span></h3>
+
+  <button onclick="logout()" style="margin-top:10px;background:#ef4444;">
+    🚪 Logout
+  </button>
+
+  <hr>
+
+  <h3>Filter Users</h3>
   <select id="filter" onchange="render()">
     <option value="all">All Users</option>
   </select>
@@ -110,7 +118,7 @@ if(!localStorage.getItem("user")){
 <!-- MAIN -->
 <div class="main">
 
-<h2>📊 Dashboard</h2>
+<h2>📊 Projects Dashboard</h2>
 
 <!-- STATS -->
 <div class="stats">
@@ -141,6 +149,8 @@ if(!localStorage.getItem("user")){
 
 <script>
 
+document.getElementById("u").innerText = currentUser;
+
 /* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
@@ -155,7 +165,7 @@ function getUsers(data){
   return [...new Set(data.map(p => p.user))];
 }
 
-/* GLOBAL */
+/* GLOBAL FILTER FIX */
 let filteredData = [];
 
 /* RENDER */
@@ -174,9 +184,8 @@ function render(){
     list.innerHTML += `
       <div class="card">
 
-        <!-- 🔥 ORDER FIXED -->
         <p>👤 Username: <b>${p.user}</b></p>
-        <p>📂 Project name: <b>${p.name}</b></p>
+        <p>📂 Project: <b>${p.name}</b></p>
         <p>🔗 Link: <a href="${p.link}" target="_blank">${p.link}</a></p>
 
         <button class="btn edit" onclick="edit(${i})">Edit</button>
@@ -216,7 +225,6 @@ function add(){
     return alert("Fill all fields");
   }
 
-  // fix link
   if(!link.startsWith("http")){
     link = "https://" + link;
   }
@@ -229,7 +237,6 @@ function add(){
 /* DELETE */
 function del(i){
   let data = getData();
-
   let item = filteredData[i];
 
   let index = data.findIndex(p =>
@@ -246,7 +253,6 @@ function del(i){
 /* EDIT */
 function edit(i){
   let data = getData();
-
   let item = filteredData[i];
 
   let index = data.findIndex(p =>
@@ -269,6 +275,12 @@ function edit(i){
     save(data);
     render();
   }
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
 }
 
 render();
