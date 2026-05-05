@@ -195,11 +195,15 @@ th{
             <h2 id="totalUsers">0</h2>
             <p>Users</p>
           </div>
+
+          <div class="stat">
+            <h2 id="topUser">-</h2>
+            <p>Top User</p>
+          </div>
         </div>
 
-        <!-- 👇 USERS PROJECT COUNT -->
+        <!-- USERS LIST -->
         <div id="usersList"></div>
-
       </div>
 
     </div>
@@ -238,6 +242,7 @@ function save(data){
   localStorage.setItem("projects", JSON.stringify(data));
 }
 
+/* ADD */
 function add(){
   let data = getData();
 
@@ -254,13 +259,14 @@ function add(){
   data.push({user,name,link});
   save(data);
 
-  document.getElementById("user").value="";
-  document.getElementById("name").value="";
-  document.getElementById("link").value="";
+  user.value="";
+  name.value="";
+  link.value="";
 
   render();
 }
 
+/* DELETE */
 function del(i){
   let d = getData();
   d.splice(i,1);
@@ -268,8 +274,10 @@ function del(i){
   render();
 }
 
+/* EDIT */
 function edit(i){
   let d = getData();
+
   let u = prompt("User", d[i].user);
   let n = prompt("Project", d[i].name);
   let l = prompt("Link", d[i].link);
@@ -284,35 +292,49 @@ function edit(i){
   }
 }
 
+/* RENDER */
 function render(){
   let d = getData();
   let s = document.getElementById("search").value.toLowerCase();
 
   let table = document.getElementById("table");
-  table.innerHTML="";
+  table.innerHTML = "";
 
   let filtered = d.filter(x=>x.user.toLowerCase().includes(s));
 
-  /* GLOBAL STATS */
+  /* STATS */
   document.getElementById("totalProjects").innerText = d.length;
   document.getElementById("totalUsers").innerText =
     [...new Set(d.map(x=>x.user))].length;
 
-  /* USER PROJECT COUNT 🔥 */
+  /* USER COUNT */
   let usersCount = {};
-
   d.forEach(p=>{
     usersCount[p.user] = (usersCount[p.user] || 0) + 1;
   });
 
+  /* TOP USER 👑 */
+  let topUser = "-";
+  let max = 0;
+
+  for(let u in usersCount){
+    if(usersCount[u] > max){
+      max = usersCount[u];
+      topUser = u;
+    }
+  }
+
+  document.getElementById("topUser").innerText = topUser;
+
+  /* USERS LIST */
   let usersList = document.getElementById("usersList");
   usersList.innerHTML = "";
 
-  for(let user in usersCount){
+  for(let u in usersCount){
     usersList.innerHTML += `
       <div class="userStat">
-        <span>${user}</span>
-        <span>${usersCount[user]} projects</span>
+        <span>${u}</span>
+        <span>${usersCount[u]} projects</span>
       </div>
     `;
   }
@@ -332,6 +354,7 @@ function render(){
   });
 }
 
+/* LOGOUT */
 function logout(){
   localStorage.removeItem("user");
   location="index.html";
