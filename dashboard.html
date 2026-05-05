@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro Dynamic</title>
+<title>Dashboard</title>
 
 <style>
 body{
@@ -17,12 +17,9 @@ body{
 .sidebar{
   width:220px;
   height:100vh;
-  background: rgba(17,24,39,0.8);
-  backdrop-filter: blur(10px);
+  background:#111827;
   padding:20px;
 }
-
-.sidebar h2{ color:#38bdf8; }
 
 /* MAIN */
 .main{
@@ -36,43 +33,27 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:15px;
-  background: rgba(17,24,39,0.6);
+  background:#111827;
   border-radius:12px;
 }
 
 /* INPUTS */
 input,button{
-  padding:12px;
+  padding:10px;
   margin:5px;
   border:none;
-  border-radius:10px;
-  transition:0.2s;
+  border-radius:8px;
 }
 
 input{
-  background:#111827;
+  background:#0f172a;
   color:white;
-}
-
-input:focus{
-  box-shadow:0 0 10px #38bdf8;
-  transform:scale(1.02);
 }
 
 button{
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+  background:#38bdf8;
   color:white;
   cursor:pointer;
-}
-
-button:hover{
-  transform:scale(1.05);
-}
-
-/* SEARCH */
-#search{
-  width:100%;
-  margin:10px 0;
 }
 
 /* STATS */
@@ -85,30 +66,17 @@ button:hover{
 .stat{
   flex:1;
   padding:12px;
-  border-radius:12px;
-  background: rgba(17,24,39,0.7);
+  background:#111827;
+  border-radius:10px;
   color:#38bdf8;
-  transition:0.3s;
-}
-
-/* GRID */
-.users{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-  gap:15px;
 }
 
 /* CARD */
 .card{
-  background: rgba(17,24,39,0.6);
+  background:#111827;
   padding:15px;
-  border-radius:15px;
-  border:1px solid rgba(56,189,248,0.15);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-6px);
+  border-radius:12px;
+  margin-bottom:15px;
 }
 
 /* TABLE */
@@ -119,32 +87,27 @@ table{
 
 th,td{
   padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid #2d3748;
 }
 
-th{ color:#38bdf8; }
+th{
+  color:#38bdf8;
+}
 
 a{
   color:#38bdf8;
   text-decoration:none;
 }
 
-/* ACTIONS */
-.delete{ color:#ef4444; cursor:pointer; margin-left:6px; }
-.edit{ color:#facc15; cursor:pointer; margin-left:6px; }
+.delete{
+  color:red;
+  cursor:pointer;
+}
 
-/* TOAST */
-#toast{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  background:#38bdf8;
-  color:#0a0f1c;
-  padding:10px 15px;
-  border-radius:10px;
-  display:none;
-  font-weight:bold;
-  transition:0.3s;
+.edit{
+  color:yellow;
+  cursor:pointer;
+  margin-left:5px;
 }
 </style>
 </head>
@@ -152,214 +115,157 @@ a{
 <body>
 
 <div class="sidebar">
-  <h2>⚡ Dashboard</h2>
+  <h2>Dashboard</h2>
+  <p id="username"></p>
 </div>
 
 <div class="main">
 
   <div class="topbar">
-    <h3>📊 Dynamic Dashboard</h3>
+    <h3>Projects Manager</h3>
     <button onclick="logout()">Logout</button>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
-    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
+    <div class="stat">👤 Users: <span id="usersCount">0</span></div>
+    <div class="stat">📁 Projects: <span id="projectsCount">0</span></div>
   </div>
 
   <!-- FORM -->
   <div>
-    <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- SEARCH -->
-  <input id="search" placeholder="🔍 Search..." oninput="render()">
-
-  <!-- USERS -->
-  <div id="users" class="users"></div>
+  <!-- LIST -->
+  <div id="list"></div>
 
 </div>
 
-<!-- TOAST -->
-<div id="toast"></div>
-
 <script>
 
-/* AUTH */
+/* AUTH CHECK */
 if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-/* DATA */
+/* USER */
+let currentUser = localStorage.getItem("user");
+document.getElementById("username").innerText = "👤 " + currentUser;
+
+/* DATA PER USER */
 function getData(){
-  return JSON.parse(localStorage.getItem("projects")) || [];
+  return JSON.parse(localStorage.getItem("projects_"+currentUser)) || [];
 }
 
-function save(d){
-  localStorage.setItem("projects",JSON.stringify(d));
-}
-
-/* TOAST */
-function showToast(msg){
-  let t=document.getElementById("toast");
-  t.innerText=msg;
-  t.style.display="block";
-  t.style.opacity="1";
-
-  setTimeout(()=>{
-    t.style.opacity="0";
-    setTimeout(()=>t.style.display="none",300);
-  },1500);
+function save(data){
+  localStorage.setItem("projects_"+currentUser, JSON.stringify(data));
 }
 
 /* ADD */
 function add(){
-  let d=getData();
+  let data = getData();
 
-  let user=document.getElementById("user").value;
-  let name=document.getElementById("name").value;
-  let link=document.getElementById("link").value;
+  let name = document.getElementById("name").value.trim();
+  let link = document.getElementById("link").value.trim();
 
-  if(!user||!name||!link) return alert("fill all");
+  if(!name || !link){
+    alert("fill all");
+    return;
+  }
 
-  if(!link.startsWith("http")) link="https://"+link;
+  if(!link.startsWith("http")) link = "https://" + link;
 
-  d.push({id:Date.now(),user,name,link});
-  save(d);
+  data.push({id:Date.now(), name, link});
 
-  document.getElementById("user").value="";
+  save(data);
+
   document.getElementById("name").value="";
   document.getElementById("link").value="";
 
-  showToast("✅ Project added!");
   render();
 }
 
-/* DELETE PROJECT */
-function removeProject(id){
-  let d=getData().filter(x=>x.id!==id);
-  save(d);
-  showToast("🗑 Deleted!");
-  render();
-}
-
-/* DELETE USER */
-function removeUser(user){
-  if(!confirm("Delete user " + user + " ?")) return;
-
-  let d=getData().filter(x=>x.user!==user);
-  save(d);
-  showToast("👤 User deleted!");
+/* DELETE */
+function del(id){
+  let data = getData().filter(p => p.id !== id);
+  save(data);
   render();
 }
 
 /* EDIT */
-function editProject(id){
-  let d=getData();
-  let p=d.find(x=>x.id===id);
+function edit(id){
+  let data = getData();
+  let p = data.find(x => x.id === id);
 
-  let n=prompt("Edit name:",p.name);
-  if(n) p.name=n;
+  let n = prompt("edit name", p.name);
+  let l = prompt("edit link", p.link);
 
-  let l=prompt("Edit link:",p.link);
+  if(n) p.name = n;
   if(l){
-    if(!l.startsWith("http")) l="https://"+l;
-    p.link=l;
+    if(!l.startsWith("http")) l = "https://" + l;
+    p.link = l;
   }
 
-  save(d);
-  showToast("✏️ Updated!");
+  save(data);
   render();
 }
 
 /* STATS */
-function updateStats(d){
-  document.getElementById("totalUsers").innerText =
-    new Set(d.map(p=>p.user)).size;
-
-  document.getElementById("totalProjects").innerText =
-    d.length;
+function stats(data){
+  document.getElementById("usersCount").innerText = 1;
+  document.getElementById("projectsCount").innerText = data.length;
 }
 
 /* RENDER */
 function render(){
-  let d=getData();
+  let data = getData();
+  let box = document.getElementById("list");
 
-  let q=document.getElementById("search").value?.toLowerCase()||"";
-
-  let f=d.filter(p=>
-    p.user.toLowerCase().includes(q) ||
-    p.name.toLowerCase().includes(q)
-  );
-
-  let box=document.getElementById("users");
   box.innerHTML="";
 
-  let grouped={};
-
-  f.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user]=[];
-    grouped[p.user].push(p);
-  });
-
-  for(let u in grouped){
-
-    let rows=grouped[u].map(p=>`
-      <tr>
-        <td>
-          ${p.name}
-          <div style="font-size:11px;opacity:0.6">${p.link}</div>
-        </td>
-
-        <td>
-          <a href="${p.link}" target="_blank">open</a>
-        </td>
-
-        <td>
-          <span class="delete" onclick="removeProject(${p.id})">del</span>
-          <span class="edit" onclick="editProject(${p.id})">edit</span>
-        </td>
-      </tr>
-    `).join("");
-
-    box.innerHTML+=`
-      <div class="card">
-
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3>👤 ${u}</h3>
-
-          <button onclick="removeUser('${u}')" style="background:#ef4444;padding:6px 10px;border:none;border-radius:8px;color:white;cursor:pointer;">
-            Delete User
-          </button>
-        </div>
-
-        <div style="font-size:12px;opacity:0.6;margin-bottom:8px;">
-          📁 ${grouped[u].length} projects
-        </div>
-
-        <table>
-          <tr><th>Project</th><th>Link</th><th>Action</th></tr>
-          ${rows}
-        </table>
-
-      </div>
-    `;
+  if(data.length === 0){
+    box.innerHTML = "<p>No projects</p>";
+    stats(data);
+    return;
   }
 
-  updateStats(d);
-}
+  box.innerHTML = `
+    <div class="card">
+      <table>
+        <tr>
+          <th>Project</th>
+          <th>Link</th>
+          <th>Action</th>
+        </tr>
 
-render();
+        ${data.map(p=>`
+          <tr>
+            <td>${p.name}</td>
+            <td><a href="${p.link}" target="_blank">open</a></td>
+            <td>
+              <span class="delete" onclick="del(${p.id})">del</span>
+              <span class="edit" onclick="edit(${p.id})">edit</span>
+            </td>
+          </tr>
+        `).join("")}
+
+      </table>
+    </div>
+  `;
+
+  stats(data);
+}
 
 /* LOGOUT */
 function logout(){
   localStorage.clear();
   location.href="index.html";
 }
+
+render();
 
 </script>
 
