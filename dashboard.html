@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>User Dashboard</title>
 
 <style>
 body {
@@ -13,161 +13,94 @@ body {
   display: flex;
 }
 
-/* Sidebar */
 .sidebar {
-  width: 240px;
-  height: 100vh;
+  width: 220px;
   background: #111827;
+  height: 100vh;
   padding: 20px;
-}
-
-.sidebar h2 {
-  margin-bottom: 20px;
 }
 
 .sidebar a {
   display: block;
   color: #94a3b8;
-  text-decoration: none;
-  margin: 12px 0;
+  margin: 10px 0;
   cursor: pointer;
 }
 
-.sidebar a:hover {
-  color: white;
-}
-
-/* Main */
 .main {
   flex: 1;
-  padding: 25px;
-}
-
-/* Pages */
-.page {
-  display: none;
-}
-
-.active {
-  display: block;
-}
-
-/* Cards stats */
-.stats {
-  display: flex;
-  gap: 15px;
-}
-
-.stat {
-  background: #1e293b;
   padding: 20px;
-  border-radius: 12px;
-  flex: 1;
-  text-align: center;
 }
 
-/* Inputs */
 input {
   padding: 10px;
   margin: 5px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: none;
   background: #111827;
   color: white;
 }
 
-/* Button */
 button {
   padding: 10px 14px;
-  border-radius: 10px;
-  border: none;
   background: #38bdf8;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
 }
 
-/* Project cards */
 .card {
   background: #1e293b;
-  padding: 15px;
+  padding: 12px;
   margin-top: 10px;
   border-radius: 12px;
-}
-
-.btn {
-  margin-top: 10px;
-  padding: 6px 10px;
-  font-size: 12px;
-}
-
-.btn.del {
-  background: #ef4444;
-  color: white;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>🚀 Dashboard</h2>
-  <a onclick="showPage('home')">Home</a>
-  <a onclick="showPage('projects')">Projects</a>
-  <a onclick="showPage('settings')">Settings</a>
+  <h3>👤 User Panel</h3>
+  <p id="currentUser"></p>
+  <a onclick="logout()">Logout</a>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-<!-- HOME -->
-<div id="home" class="page active">
-  <h2>📊 Statistics</h2>
+<h2>My Projects</h2>
 
-  <div class="stats">
-    <div class="stat">
-      <h3 id="countProjects">0</h3>
-      <p>Projects</p>
-    </div>
+<input id="name" placeholder="Project name">
+<input id="link" placeholder="Project link">
+<button onclick="addProject()">Add</button>
 
-    <div class="stat">
-      <h3 id="countLinks">0</h3>
-      <p>Links</p>
-    </div>
-  </div>
-</div>
-
-<!-- PROJECTS -->
-<div id="projects" class="page">
-
-  <h2>📂 Projects</h2>
-
-  <input id="name" placeholder="Project name">
-  <input id="link" placeholder="Project link">
-  <button onclick="addProject()">Add</button>
-
-  <div id="list"></div>
-</div>
-
-<!-- SETTINGS -->
-<div id="settings" class="page">
-  <h2>⚙️ Settings</h2>
-  <p>Coming soon...</p>
-</div>
+<div id="list"></div>
 
 </div>
 
 <script>
 
-let projects = JSON.parse(localStorage.getItem("projects")) || [];
+/* ---------------- LOGIN CHECK ---------------- */
+let user = localStorage.getItem("user");
 
-/* NAVIGATION */
-function showPage(page) {
-  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-  document.getElementById(page).classList.add("active");
+if(!user) {
+  window.location.href = "index.html";
 }
 
-/* RENDER */
+document.getElementById("currentUser").innerText = "👤 " + user;
+
+/* ---------------- DATA PER USER ---------------- */
+function getData() {
+  return JSON.parse(localStorage.getItem("projects_" + user)) || [];
+}
+
+function saveData(data) {
+  localStorage.setItem("projects_" + user, JSON.stringify(data));
+}
+
+/* ---------------- RENDER ---------------- */
 function render() {
+  let projects = getData();
   const list = document.getElementById("list");
   list.innerHTML = "";
 
@@ -175,50 +108,57 @@ function render() {
     list.innerHTML += `
       <div class="card">
         <h3>${p.name}</h3>
-        <a href="${p.link}" target="_blank">${p.link}</a><br>
-
-        <button class="btn" onclick="editProject(${i})">Edit</button>
-        <button class="btn del" onclick="deleteProject(${i})">Delete</button>
+        <a href="${p.link}" target="_blank">${p.link}</a><br><br>
+        <button onclick="editProject(${i})">Edit</button>
+        <button onclick="deleteProject(${i})">Delete</button>
       </div>
     `;
   });
-
-  // STATS
-  document.getElementById("countProjects").innerText = projects.length;
-  document.getElementById("countLinks").innerText = projects.length;
-
-  localStorage.setItem("projects", JSON.stringify(projects));
 }
 
-/* ADD */
+/* ---------------- ADD ---------------- */
 function addProject() {
+  let projects = getData();
+
   const name = document.getElementById("name").value;
   const link = document.getElementById("link").value;
 
   if(!name || !link) return alert("Fill fields");
 
   projects.push({name, link});
+  saveData(projects);
+
   render();
 }
 
-/* DELETE */
+/* ---------------- DELETE ---------------- */
 function deleteProject(i) {
+  let projects = getData();
   projects.splice(i, 1);
+  saveData(projects);
   render();
 }
 
-/* EDIT */
+/* ---------------- EDIT ---------------- */
 function editProject(i) {
+  let projects = getData();
+
   const n = prompt("Name", projects[i].name);
   const l = prompt("Link", projects[i].link);
 
   if(n && l) {
     projects[i] = {name:n, link:l};
+    saveData(projects);
     render();
   }
 }
 
-/* INIT */
+/* ---------------- LOGOUT ---------------- */
+function logout() {
+  localStorage.removeItem("user");
+  window.location.href = "index.html";
+}
+
 render();
 
 </script>
