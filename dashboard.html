@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard Pro UI</title>
+<title>Ultra Pro Admin Dashboard</title>
 
 <style>
 body{
@@ -17,38 +17,47 @@ body{
   position:fixed;
   left:0;
   top:0;
-  width:230px;
+  width:240px;
   height:100vh;
-  background: rgba(17,24,39,0.7);
-  backdrop-filter: blur(12px);
+  background: rgba(17,24,39,0.65);
+  backdrop-filter: blur(15px);
   padding:20px;
   border-right:1px solid rgba(255,255,255,0.08);
 }
 
 .sidebar h2{
   color:#38bdf8;
-  margin-bottom:20px;
 }
 
 /* TOPBAR */
 .topbar{
   position:fixed;
   top:0;
-  left:230px;
+  left:240px;
   right:0;
   height:60px;
-  background: rgba(17,24,39,0.6);
-  backdrop-filter: blur(12px);
+  background: rgba(17,24,39,0.5);
+  backdrop-filter: blur(15px);
   display:flex;
-  justify-content:flex-end;
+  justify-content:space-between;
   align-items:center;
   padding:0 20px;
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
+/* SEARCH */
+#search{
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  background:#111827;
+  color:white;
+  width:200px;
+}
+
 /* MAIN */
 .main{
-  margin-left:230px;
+  margin-left:240px;
   margin-top:60px;
   padding:20px;
 }
@@ -62,7 +71,6 @@ body{
 .stat{
   flex:1;
   background: rgba(17,24,39,0.6);
-  backdrop-filter: blur(10px);
   padding:18px;
   border-radius:15px;
   text-align:center;
@@ -116,28 +124,21 @@ td{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-/* INPUT */
+/* INPUTS */
 input,button{
   padding:10px;
   margin:5px;
   border:none;
   border-radius:10px;
-  outline:none;
 }
 
 input{
   background:#111827;
   color:white;
-  border:1px solid rgba(255,255,255,0.1);
-}
-
-input:focus{
-  border-color:#38bdf8;
-  box-shadow:0 0 10px rgba(56,189,248,0.3);
 }
 
 button{
-  background: linear-gradient(45deg,#38bdf8,#0ea5e9);
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
   transition:0.2s;
@@ -160,12 +161,21 @@ button:hover{
 
 .openBtn:hover{
   transform:scale(1.1);
-  background:#0ea5e9;
 }
 
 /* ACTION */
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
+
+/* ANIMATION */
+.card, .stat{
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
 </style>
 </head>
 
@@ -173,11 +183,12 @@ button:hover{
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>⚡ Admin Pro</h2>
+  <h2>⚡ Ultra Admin</h2>
 </div>
 
 <!-- TOPBAR -->
 <div class="topbar">
+  <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
   👤 <span id="username"></span>
 </div>
 
@@ -221,6 +232,7 @@ function save(d){
   localStorage.setItem("projects", JSON.stringify(d));
 }
 
+/* ADD */
 function add(){
   let d = getData();
 
@@ -242,12 +254,14 @@ function add(){
   render();
 }
 
+/* DELETE */
 function delProject(id){
   let d = getData().filter(x=>x.id!==id);
   save(d);
   render();
 }
 
+/* EDIT */
 function editProject(id){
   let d = getData();
   let p = d.find(x=>x.id===id);
@@ -265,22 +279,31 @@ function editProject(id){
   render();
 }
 
+/* STATS */
 function updateStats(d){
   let users = new Set(d.map(p=>p.user));
   document.getElementById("totalUsers").innerText = users.size;
   document.getElementById("totalProjects").innerText = d.length;
 }
 
+/* RENDER + SEARCH */
 function render(){
   let d = getData();
-  updateStats(d);
+  let q = document.getElementById("search").value?.toLowerCase() || "";
+
+  let filtered = d.filter(p =>
+    p.user.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q)
+  );
+
+  updateStats(filtered);
 
   let box = document.getElementById("list");
   box.innerHTML = "";
 
   let grouped = {};
 
-  d.forEach(p=>{
+  filtered.forEach(p=>{
     if(!grouped[p.user]) grouped[p.user]=[];
     grouped[p.user].push(p);
   });
