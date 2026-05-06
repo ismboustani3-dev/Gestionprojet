@@ -25,7 +25,9 @@ body{
   border-right:1px solid rgba(255,255,255,0.08);
 }
 
-.sidebar h2{ color:#38bdf8; }
+.sidebar h2{
+  color:#38bdf8;
+}
 
 /* TOPBAR */
 .topbar{
@@ -40,23 +42,17 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:0 20px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-/* MENU */
-#menu{
-  position:absolute;
-  top:50px;
-  right:20px;
+/* SEARCH */
+#search{
+  padding:8px;
+  border-radius:8px;
+  border:none;
   background:#111827;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-  display:none;
-}
-
-#menu button{
-  width:120px;
-  margin:5px 0;
+  color:white;
+  width:200px;
 }
 
 /* MAIN */
@@ -78,17 +74,57 @@ body{
   padding:18px;
   border-radius:15px;
   text-align:center;
+  border:1px solid rgba(56,189,248,0.2);
+  transition:0.3s;
+}
+
+.stat:hover{
+  transform:translateY(-5px);
+  border-color:#38bdf8;
+}
+
+/* GRID */
+#list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:15px;
+  margin-top:15px;
 }
 
 /* CARD */
 .card{
   background: rgba(17,24,39,0.6);
+  backdrop-filter: blur(10px);
   padding:15px;
   border-radius:15px;
-  margin-top:15px;
+  border:1px solid rgba(255,255,255,0.08);
+  transition:0.3s;
 }
 
-/* INPUT */
+.card:hover{
+  transform:translateY(-6px);
+  border-color:#38bdf8;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  margin-top:10px;
+  border-collapse:collapse;
+}
+
+th{
+  text-align:left;
+  padding:8px;
+  color:#38bdf8;
+}
+
+td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* INPUTS */
 input,button{
   padding:10px;
   margin:5px;
@@ -105,219 +141,207 @@ button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
+  transition:0.2s;
 }
 
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
+button:hover{
+  transform:scale(1.05);
 }
 
-th{ color:#38bdf8; text-align:left; padding:8px; }
-td{ padding:8px; border-bottom:1px solid #222; }
+/* OPEN BUTTON */
+.openBtn{
+  padding:6px 12px;
+  border-radius:8px;
+  border:none;
+  background:#38bdf8;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
 
-span{ cursor:pointer; margin:0 5px; }
+.openBtn:hover{
+  transform:scale(1.1);
+}
 
+/* ACTION */
+.delete{ color:#ef4444; cursor:pointer; }
+.edit{ color:#facc15; cursor:pointer; margin-left:10px; }
+
+/* ANIMATION */
+.card, .stat{
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Ultra Admin</h2>
 </div>
 
+<!-- TOPBAR -->
 <div class="topbar">
-  <input id="search" placeholder="Search..." oninput="render()">
-
-  <div style="position:relative;">
-    👤 <span id="username"></span>
-    <button onclick="toggleMenu()">⚙️</button>
-
-    <div id="menu">
-      <button onclick="settings()">Settings</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
+  <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
+  👤 <span id="username"></span>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
+  <!-- STATS -->
   <div class="stats">
+    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
     <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
   </div>
 
+  <!-- ADD -->
   <div class="card">
-    <h3>Add Project</h3>
+    <h3>➕ Add Project</h3>
+    <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
   </div>
 
+  <!-- LIST -->
   <div id="list"></div>
 
 </div>
 
 <script>
 
-/* DB SYSTEM */
-function getDB(){
-  return JSON.parse(localStorage.getItem("db")) || {
-    users: [],
-    currentUser: null
-  };
-}
-
-function saveDB(db){
-  localStorage.setItem("db", JSON.stringify(db));
-}
-
-/* INIT USERS */
-(function(){
-  let db = getDB();
-
-  if(db.users.length === 0){
-    db.users = [
-      {username:"user1", password:"1234", projects:[]},
-      {username:"user2", password:"1234", projects:[]}
-    ];
-    db.currentUser = "user1";
-    saveDB(db);
-  }
-})();
-
-/* CHECK LOGIN */
-let db = getDB();
-if(!db.currentUser){
+if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-function getUser(){
-  let db = getDB();
-  return db.users.find(u => u.username === db.currentUser);
+document.getElementById("username").innerText =
+  localStorage.getItem("user");
+
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
 }
 
-/* UI */
-document.getElementById("username").innerText = db.currentUser;
-
-/* MENU */
-function toggleMenu(){
-  let m = document.getElementById("menu");
-  m.style.display = m.style.display==="block"?"none":"block";
+function save(d){
+  localStorage.setItem("projects", JSON.stringify(d));
 }
 
-/* SETTINGS (USERNAME + PASSWORD) */
-function settings(){
-  let db = getDB();
-  let u = getUser();
-
-  let newU = prompt("Username", u.username);
-  let newP = prompt("Password", u.password);
-
-  if(newU) u.username = newU;
-  if(newP) u.password = newP;
-
-  db.currentUser = u.username;
-
-  saveDB(db);
-  document.getElementById("username").innerText = u.username;
-  document.getElementById("menu").style.display="none";
-}
-
-/* LOGOUT */
-function logout(){
-  let db = getDB();
-  db.currentUser = null;
-  saveDB(db);
-  location.href="index.html";
-}
-
-/* ADD PROJECT */
+/* ADD */
 function add(){
-  let db = getDB();
-  let u = getUser();
+  let d = getData();
 
+  let user = document.getElementById("user").value;
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!name || !link) return alert("Fill all");
+  if(!user || !name || !link){
+    alert("Fill all");
+    return;
+  }
 
-  if(!link.startsWith("http")) link="https://"+link;
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
 
-  u.projects.push({
-    id:Date.now(),
-    name,
-    link
-  });
-
-  saveDB(db);
+  d.push({id:Date.now(), user, name, link});
+  save(d);
   render();
 }
 
 /* DELETE */
-function del(id){
-  let db = getDB();
-  let u = getUser();
-
-  u.projects = u.projects.filter(p=>p.id!==id);
-
-  saveDB(db);
+function delProject(id){
+  let d = getData().filter(x=>x.id!==id);
+  save(d);
   render();
 }
 
 /* EDIT */
-function edit(id){
-  let db = getDB();
-  let u = getUser();
+function editProject(id){
+  let d = getData();
+  let p = d.find(x=>x.id===id);
 
-  let p = u.projects.find(x=>x.id===id);
+  let n = prompt("Edit name", p.name);
+  if(n) p.name = n;
 
-  let n = prompt("Name", p.name);
-  let l = prompt("Link", p.link);
-
-  if(n) p.name=n;
+  let l = prompt("Edit link", p.link);
   if(l){
     if(!l.startsWith("http")) l="https://"+l;
-    p.link=l;
+    p.link = l;
   }
 
-  saveDB(db);
+  save(d);
   render();
 }
 
-/* RENDER */
+/* STATS */
+function updateStats(d){
+  let users = new Set(d.map(p=>p.user));
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalProjects").innerText = d.length;
+}
+
+/* RENDER + SEARCH */
 function render(){
-  let u = getUser();
+  let d = getData();
+  let q = document.getElementById("search").value?.toLowerCase() || "";
 
-  let q = document.getElementById("search").value?.toLowerCase()||"";
+  let filtered = d.filter(p =>
+    p.user.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q)
+  );
 
-  let list = u.projects.filter(p=>p.name.toLowerCase().includes(q));
-
-  document.getElementById("totalProjects").innerText = u.projects.length;
+  updateStats(filtered);
 
   let box = document.getElementById("list");
   box.innerHTML = "";
 
-  let rows = list.map(p=>`
-    <tr>
-      <td>${p.name}</td>
-      <td><a href="${p.link}" target="_blank"><button>OPEN</button></a></td>
-      <td>
-        <span onclick="del(${p.id})">del</span>
-        <span onclick="edit(${p.id})">edit</span>
-      </td>
-    </tr>
-  `).join("");
+  let grouped = {};
 
-  box.innerHTML = `
-    <div class="card">
-      <h3>User: ${u.username}</h3>
-      <table>
-        <tr><th>Project</th><th>Link</th><th>Action</th></tr>
-        ${rows}
-      </table>
-    </div>
-  `;
+  filtered.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user]=[];
+    grouped[p.user].push(p);
+  });
+
+  for(let u in grouped){
+
+    let rows = grouped[u].map(p=>`
+      <tr>
+        <td>${p.name}</td>
+
+        <td>
+          <a href="${p.link}" target="_blank">
+            <button class="openBtn">OPEN</button>
+          </a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="delProject(${p.id})">del</span>
+          <span class="edit" onclick="editProject(${p.id})">edit</span>
+        </td>
+      </tr>
+    `).join("");
+
+    box.innerHTML += `
+      <div class="card">
+        <h3>👤 ${u}</h3>
+
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
+    `;
+  }
 }
 
 render();
