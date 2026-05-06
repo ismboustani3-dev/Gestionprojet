@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Pro Admin Dashboard</title>
+<title>Ultra Admin Pro</title>
 
 <style>
 body{
@@ -20,12 +20,11 @@ body{
   width:240px;
   height:100vh;
   background: rgba(17,24,39,0.65);
-  backdrop-filter: blur(15px);
   padding:20px;
   border-right:1px solid rgba(255,255,255,0.08);
 }
 
-.sidebar h2{ color:#38bdf8; }
+.sidebar h2{color:#38bdf8;}
 
 /* TOPBAR */
 .topbar{
@@ -35,7 +34,6 @@ body{
   right:0;
   height:60px;
   background: rgba(17,24,39,0.5);
-  backdrop-filter: blur(15px);
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -70,11 +68,28 @@ body{
   background:#ef4444;
 }
 
-/* MAIN */
-.main{
+/* LAYOUT */
+.container{
+  display:flex;
   margin-left:240px;
   margin-top:60px;
-  padding:20px;
+  height:calc(100vh - 60px);
+}
+
+/* USERS LEFT */
+.usersPanel{
+  width:320px;
+  background:#0f172a;
+  border-right:1px solid rgba(255,255,255,0.1);
+  padding:10px;
+  overflow:auto;
+}
+
+/* PROJECTS RIGHT */
+.projectsPanel{
+  flex:1;
+  padding:15px;
+  overflow:auto;
 }
 
 /* CARDS */
@@ -123,11 +138,10 @@ button{
   cursor:pointer;
 }
 
-.danger{ background:#ef4444; }
+.danger{background:#ef4444;}
 
 .link{
   color:#38bdf8;
-  text-decoration:underline;
   word-break:break-all;
 }
 
@@ -160,30 +174,34 @@ button{
 </div>
 
 <!-- MAIN -->
-<div class="main">
+<div class="container">
 
-  <!-- PROJECTS -->
-  <div class="card">
-    <h3>➕ Add Project</h3>
-    <input id="user" placeholder="Username">
-    <input id="name" placeholder="Project name">
-    <input id="link" placeholder="Project link">
-    <button onclick="add()">Add</button>
+  <!-- USERS LEFT -->
+  <div class="usersPanel">
+    <h3>👑 Users</h3>
+    <div id="usersBox"></div>
   </div>
 
-  <div id="list"></div>
+  <!-- PROJECTS RIGHT -->
+  <div class="projectsPanel">
 
-  <!-- USERS ADMIN -->
-  <div class="card">
-    <h3>👑 Users Management</h3>
-    <div id="usersBox"></div>
+    <div class="card">
+      <h3>➕ Add Project</h3>
+      <input id="user" placeholder="Username">
+      <input id="name" placeholder="Project name">
+      <input id="link" placeholder="Project link">
+      <button onclick="add()">Add</button>
+    </div>
+
+    <div id="list"></div>
+
   </div>
 
 </div>
 
 <script>
 
-/* INIT */
+/* AUTH */
 if(!localStorage.getItem("admin_pass")){
   localStorage.setItem("admin_pass","1234");
 }
@@ -203,16 +221,16 @@ function toggleMenu(){
 
 /* SETTINGS */
 function openSettings(){
-  let old = prompt("Enter current password:");
+  let old = prompt("Enter password:");
   if(old !== localStorage.getItem("admin_pass")){
-    alert("Wrong password!");
+    alert("Wrong password");
     return;
   }
 
   let np = prompt("New password:");
   if(np){
     localStorage.setItem("admin_pass", np);
-    alert("Password updated!");
+    alert("Updated!");
   }
 
   document.getElementById("adminMenu").style.display="none";
@@ -224,7 +242,7 @@ function logout(){
   location.href="index.html";
 }
 
-/* PROJECTS DATA */
+/* DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
@@ -233,7 +251,6 @@ function save(d){
   localStorage.setItem("projects", JSON.stringify(d));
 }
 
-/* USERS DATA */
 function getUsers(){
   return JSON.parse(localStorage.getItem("users")) || [];
 }
@@ -250,7 +267,7 @@ function add(){
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!user || !name || !link) return alert("Fill all");
+  if(!user || !name || !link) return;
 
   if(!link.startsWith("http")) link="https://"+link;
 
@@ -284,14 +301,13 @@ function editProject(id){
   render();
 }
 
-/* DELETE USER */
+/* USERS */
 function deleteUser(u){
   let d = getUsers().filter(x=>x.username!==u);
   saveUsers(d);
   renderUsers();
 }
 
-/* EDIT USER PASSWORD */
 function editUser(u){
   let d = getUsers();
   let user = d.find(x=>x.username===u);
@@ -305,8 +321,28 @@ function editUser(u){
   renderUsers();
 }
 
+/* RENDER USERS */
+function renderUsers(){
+  let d = getUsers();
+  let box = document.getElementById("usersBox");
+
+  box.innerHTML="";
+
+  d.forEach(u=>{
+    box.innerHTML += `
+      <div class="card">
+        <h4>👤 ${u.username}</h4>
+        <p>🔑 ${u.password}</p>
+
+        <button onclick="editUser('${u.username}')">Edit</button>
+        <button class="danger" onclick="deleteUser('${u.username}')">Delete</button>
+      </div>
+    `;
+  });
+}
+
 /* RENDER PROJECTS */
-function render(){
+function renderProjects(){
   let d = getData();
   let q = document.getElementById("search").value?.toLowerCase() || "";
 
@@ -316,9 +352,9 @@ function render(){
   );
 
   let box = document.getElementById("list");
-  box.innerHTML = "";
+  box.innerHTML="";
 
-  let grouped = {};
+  let grouped={};
 
   filtered.forEach(p=>{
     if(!grouped[p.user]) grouped[p.user]=[];
@@ -348,30 +384,12 @@ function render(){
       </div>
     `;
   }
-
-  renderUsers();
 }
 
-/* RENDER USERS */
-function renderUsers(){
-  let d = getUsers();
-  let box = document.getElementById("usersBox");
-
-  if(!box) return;
-
-  box.innerHTML="";
-
-  d.forEach(u=>{
-    box.innerHTML += `
-      <div class="card">
-        <h4>👤 ${u.username}</h4>
-        <p>🔑 ${u.password}</p>
-
-        <button onclick="editUser('${u.username}')">Edit Password</button>
-        <button class="danger" onclick="deleteUser('${u.username}')">Delete User</button>
-      </div>
-    `;
-  });
+/* MAIN */
+function render(){
+  renderProjects();
+  renderUsers();
 }
 
 render();
