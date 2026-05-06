@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro UI</title>
+<title>Dashboard Pro</title>
 
 <style>
 body{
@@ -12,7 +12,7 @@ body{
   color:white;
 }
 
-/* SIDEBAR FIXED */
+/* SIDEBAR */
 .sidebar{
   position:fixed;
   left:0;
@@ -27,7 +27,7 @@ body{
   color:#38bdf8;
 }
 
-/* TOPBAR FIXED */
+/* TOPBAR */
 .topbar{
   position:fixed;
   top:0;
@@ -47,10 +47,6 @@ body{
   cursor:pointer;
 }
 
-.userMenu span{
-  margin-right:5px;
-}
-
 .dropdown{
   position:absolute;
   right:0;
@@ -59,7 +55,6 @@ body{
   border-radius:10px;
   display:none;
   overflow:hidden;
-  min-width:150px;
 }
 
 .dropdown div{
@@ -76,6 +71,22 @@ body{
   margin-left:220px;
   margin-top:60px;
   padding:20px;
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:15px;
+}
+
+.stat{
+  flex:1;
+  background:#111827;
+  padding:15px;
+  border-radius:12px;
+  text-align:center;
+  color:#38bdf8;
+  font-size:18px;
 }
 
 /* CARD */
@@ -120,7 +131,6 @@ button{
 
 <!-- TOPBAR -->
 <div class="topbar">
-
   <div class="userMenu" onclick="toggleMenu()">
     👤 <span id="username"></span> ▼
 
@@ -129,19 +139,29 @@ button{
       <div onclick="logout()">🚪 Logout</div>
     </div>
   </div>
-
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      👤 Users<br>
+      <span id="totalUsers">0</span>
+    </div>
+
+    <div class="stat">
+      📁 Projects<br>
+      <span id="totalProjects">0</span>
+    </div>
+  </div>
+
   <!-- SETTINGS -->
   <div id="settingsBox" class="card" style="display:none;">
     <h3>⚙️ Change Password</h3>
-
     <input id="oldPass" type="password" placeholder="Old password">
     <input id="newPass" type="password" placeholder="New password">
-
     <button onclick="changePassword()">Change</button>
   </div>
 
@@ -168,22 +188,21 @@ if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-/* USER NAME */
+/* USER */
 document.getElementById("username").innerText =
   localStorage.getItem("user");
 
-/* DROPDOWN */
+/* MENU */
 function toggleMenu(){
   let m = document.getElementById("menu");
   m.style.display = m.style.display === "block" ? "none" : "block";
 }
 
-/* OPEN SETTINGS */
 function openSettings(){
   document.getElementById("settingsBox").style.display="block";
 }
 
-/* CHANGE PASSWORD */
+/* PASSWORD */
 function changePassword(){
   let oldP = document.getElementById("oldPass").value;
   let newP = document.getElementById("newPass").value;
@@ -256,9 +275,18 @@ function edit(id){
   render();
 }
 
+/* STATS */
+function updateStats(data){
+  let users = new Set(data.map(p => p.user));
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalProjects").innerText = data.length;
+}
+
 /* RENDER */
 function render(){
   let d = getData();
+
+  updateStats(d);
 
   let html = d.map(p => `
     <div class="card">
