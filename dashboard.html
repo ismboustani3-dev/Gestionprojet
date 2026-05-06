@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard Pro</title>
+<title>Admin Dashboard</title>
 
 <style>
 body{
@@ -37,30 +37,6 @@ body{
   justify-content:flex-end;
   align-items:center;
   padding:0 20px;
-}
-
-/* USER MENU */
-.userMenu{
-  position:relative;
-  cursor:pointer;
-}
-
-.dropdown{
-  position:absolute;
-  right:0;
-  top:40px;
-  background:#1f2937;
-  border-radius:10px;
-  display:none;
-}
-
-.dropdown div{
-  padding:10px;
-  cursor:pointer;
-}
-
-.dropdown div:hover{
-  background:#374151;
 }
 
 /* MAIN */
@@ -139,23 +115,19 @@ button{
 /* ACTION */
 .delete{ color:red; cursor:pointer; }
 .edit{ color:orange; cursor:pointer; margin-left:10px; }
-.userEdit{ color:#facc15; cursor:pointer; margin-left:10px; }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Admin Panel</h2>
 </div>
 
-<!-- TOPBAR -->
 <div class="topbar">
   👤 <span id="username"></span>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
   <!-- STATS -->
@@ -167,20 +139,22 @@ button{
   <!-- ADD -->
   <div class="card">
     <h3>➕ Add Project</h3>
+
     <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
+
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- USERS -->
+  <!-- LIST -->
   <div id="list"></div>
 
 </div>
 
 <script>
 
-/* PROTECT ADMIN */
+/* AUTH */
 if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
@@ -215,9 +189,14 @@ function add(){
     link = "https://" + link;
   }
 
-  d.push({id:Date.now(), user, name, link});
-  save(d);
+  d.push({
+    id:Date.now(),
+    user,
+    name,
+    link
+  });
 
+  save(d);
   render();
 }
 
@@ -274,12 +253,11 @@ function editUser(oldUser){
 /* STATS */
 function updateStats(d){
   let users = new Set(d.map(p => p.user));
-
   document.getElementById("totalUsers").innerText = users.size;
   document.getElementById("totalProjects").innerText = d.length;
 }
 
-/* RENDER GROUPED */
+/* RENDER */
 function render(){
   let d = getData();
   updateStats(d);
@@ -299,7 +277,13 @@ function render(){
     let rows = grouped[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-        <td><a href="${p.link}" target="_blank">open</a></td>
+
+        <td>
+          <a href="${p.link}" target="_blank">
+            <button>OPEN</button>
+          </a>
+        </td>
+
         <td>
           <span class="delete" onclick="delProject(${p.id})">del</span>
           <span class="edit" onclick="editProject(${p.id})">edit</span>
@@ -314,7 +298,7 @@ function render(){
           <h3>👤 ${u}</h3>
 
           <div>
-            <span class="userEdit" onclick="editUser('${u}')">edit user</span>
+            <span class="edit" onclick="editUser('${u}')">edit user</span>
             <span class="delete" onclick="deleteUser('${u}')">delete user</span>
           </div>
         </div>
@@ -325,6 +309,7 @@ function render(){
             <th>Link</th>
             <th>Action</th>
           </tr>
+
           ${rows}
         </table>
 
@@ -334,6 +319,12 @@ function render(){
 }
 
 render();
+
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
 
 </script>
 
