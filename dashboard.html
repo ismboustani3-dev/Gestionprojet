@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Dashboard Pro Grid</title>
 
 <style>
 body{
@@ -85,12 +85,23 @@ body{
   color:#38bdf8;
 }
 
+/* GRID USERS */
+#list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+  gap:15px;
+}
+
 /* CARD */
 .card{
   background:#111827;
   padding:15px;
   border-radius:12px;
-  margin-top:15px;
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
 }
 
 /* TABLE */
@@ -181,7 +192,7 @@ button{
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- USERS TABLE -->
+  <!-- USERS -->
   <div id="list"></div>
 
 </div>
@@ -287,7 +298,7 @@ function updateStats(data){
   document.getElementById("totalProjects").innerText = data.length;
 }
 
-/* RENDER (GROUPED BY USER) */
+/* RENDER (GRID USERS) */
 function render(){
   let d = getData();
   updateStats(d);
