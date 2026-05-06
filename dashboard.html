@@ -2,304 +2,391 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Admin Pro</title>
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:Segoe UI;
-}
+<title>Ultra Pro Admin Dashboard</title>
 
+<style>
 body{
-  background:#0a0f1c;
+  margin:0;
+  font-family:'Segoe UI', sans-serif;
+  background: radial-gradient(circle at top,#0a0f1c,#050814);
   color:white;
-  display:flex;
 }
 
 /* SIDEBAR */
 .sidebar{
-  width:260px;
-  height:100vh;
-  background:#0f172a;
-  padding:20px;
   position:fixed;
   left:0;
   top:0;
+  width:240px;
+  height:100vh;
+  background: rgba(17,24,39,0.65);
+  backdrop-filter: blur(15px);
+  padding:20px;
+  border-right:1px solid rgba(255,255,255,0.08);
 }
 
 .sidebar h2{
   color:#38bdf8;
-  margin-bottom:20px;
 }
 
-.sidebar button{
-  width:100%;
-  margin:6px 0;
-  padding:10px;
-  background:#111827;
-  color:white;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-}
-
-.sidebar button:hover{
-  background:#1f2937;
-}
-
+/* TOPBAR */
 .topbar{
   position:fixed;
-  left:260px;
+  top:0;
+  left:240px;
   right:0;
-  height:65px;
-  background:#0f172a;
+  height:60px;
+  background: rgba(17,24,39,0.5);
+  backdrop-filter: blur(15px);
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   padding:0 20px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-.main{
-  margin-left:260px;
-  margin-top:65px;
-  padding:20px;
-  width:100%;
-}
-
-.card{
+/* ADMIN MENU */
+#adminMenu{
+  display:none;
+  position:absolute;
+  right:0;
+  top:40px;
   background:#111827;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
+  width:160px;
+}
+
+#adminMenu button{
+  width:100%;
+  margin:5px 0;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+}
+
+#adminMenu button:last-child{
+  background:#ef4444;
+}
+
+/* SEARCH */
+#search{
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  background:#111827;
+  color:white;
+  width:200px;
+}
+
+/* MAIN */
+.main{
+  margin-left:240px;
+  margin-top:60px;
   padding:20px;
+}
+
+/* STATS */
+.stats{
+  display:flex;
+  gap:15px;
+}
+
+.stat{
+  flex:1;
+  background: rgba(17,24,39,0.6);
+  padding:18px;
   border-radius:15px;
-  margin-bottom:20px;
+  text-align:center;
+  border:1px solid rgba(56,189,248,0.2);
+}
+
+/* GRID */
+#list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
+  gap:15px;
+  margin-top:15px;
+}
+
+/* CARD */
+.card{
+  background: rgba(17,24,39,0.6);
+  backdrop-filter: blur(10px);
+  padding:15px;
+  border-radius:15px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+/* TABLE */
+table{
+  width:100%;
+  margin-top:10px;
+  border-collapse:collapse;
+}
+
+th{
+  text-align:left;
+  padding:8px;
+  color:#38bdf8;
+}
+
+td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* INPUTS */
+input,button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
 }
 
 input{
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border-radius:10px;
-  border:none;
-  background:#0b1220;
+  background:#111827;
   color:white;
 }
 
 button{
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  background:#38bdf8;
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
 }
 
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-}
+/* ACTION */
+.delete{ color:#ef4444; cursor:pointer; }
+.edit{ color:#facc15; cursor:pointer; margin-left:10px; }
 
-th,td{
-  padding:10px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
-  text-align:left;
-}
-
-.delete{color:#ef4444;cursor:pointer;margin-right:10px;}
-.edit{color:#facc15;cursor:pointer;}
-
-/* USER COLUMN LAYOUT */
-.usersGrid{
-  display:flex;
-  gap:20px;
-  overflow-x:auto;
-  padding-bottom:20px;
-}
-
-.userColumn{
-  min-width:260px;
-  background:#111827;
-  padding:15px;
-  border-radius:15px;
-}
-
-.userColumn h3{
+/* LINK */
+.link{
   color:#38bdf8;
-  margin-bottom:10px;
-}
-
-.projectItem{
-  background:#0b1220;
-  padding:10px;
-  margin:8px 0;
-  border-radius:10px;
+  text-decoration:underline;
+  word-break:break-all;
 }
 
 </style>
 </head>
+
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Ultra Admin</h2>
-  <button onclick="show('dashboard')">Dashboard</button>
-  <button onclick="show('users')">Users</button>
-  <button onclick="show('projects')">Projects</button>
 </div>
 
+<!-- TOPBAR -->
 <div class="topbar">
-  <input id="search" placeholder="Search..." oninput="renderProjects()">
-  <div>👤 <span id="username"></span></div>
+
+  <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
+
+  <div style="position:relative;">
+    👤 <span id="username"></span>
+
+    <button onclick="toggleMenu()" style="margin-left:10px;">
+      ⚙️ Admin
+    </button>
+
+    <div id="adminMenu">
+      <button onclick="openSettings()">Settings</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
-  <div id="dashboard" class="card section">
-    <h3>Dashboard</h3>
-    <p>Users: <span id="uCount"></span></p>
-    <p>Projects: <span id="pCount"></span></p>
+  <div class="stats">
+    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
   </div>
 
-  <div id="users" class="card section">
-    <h3>User Management</h3>
-    <input id="newUser" placeholder="Add user">
-    <button onclick="addUser()">Add</button>
-    <table><tbody id="userList"></tbody></table>
+  <div class="card">
+    <h3>➕ Add Project</h3>
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
+    <button onclick="add()">Add</button>
   </div>
 
-  <div id="projects" class="section">
-
-    <div class="card">
-      <h3>Add Project</h3>
-      <input id="user" placeholder="User">
-      <input id="name" placeholder="Project">
-      <input id="link" placeholder="Link">
-      <button onclick="addProject()">Add</button>
-    </div>
-
-    <div id="list" class="usersGrid"></div>
-
-  </div>
+  <div id="list"></div>
 
 </div>
 
 <script>
 
-if(!localStorage.getItem("projects")) localStorage.setItem("projects","[]");
-if(!localStorage.getItem("users")) localStorage.setItem("users",JSON.stringify(["user1","user2"]));
-
-function getP(){return JSON.parse(localStorage.getItem("projects"));}
-function saveP(d){localStorage.setItem("projects",JSON.stringify(d));}
-
-function getU(){return JSON.parse(localStorage.getItem("users"));}
-function saveU(d){localStorage.setItem("users",JSON.stringify(d));}
-
-let authUser="admin";
-document.getElementById("username").innerText=authUser;
-
-function show(id){
-  document.querySelectorAll(".section").forEach(e=>e.style.display="none");
-  document.getElementById(id).style.display="block";
-}
-show('dashboard');
-
-/* USERS */
-function addUser(){
-  let u=document.getElementById("newUser").value;
-  if(!u) return;
-  let d=getU();
-  if(!d.includes(u)) d.push(u);
-  saveU(d);
-  renderUsers();
+/* INIT PASSWORD */
+if(!localStorage.getItem("admin_pass")){
+  localStorage.setItem("admin_pass","1234");
 }
 
-function delUser(u){
-  saveU(getU().filter(x=>x!==u));
-  renderUsers();
+/* AUTH */
+if(localStorage.getItem("auth") !== "true"){
+  location.href="index.html";
 }
 
-function renderUsers(){
-  let box=document.getElementById("userList");
-  box.innerHTML="";
-  getU().forEach(u=>{
-    box.innerHTML+=`<tr><td>${u}</td><td><span class='delete' onclick="delUser('${u}')">del</span></td></tr>`;
-  });
-  stats();
+document.getElementById("username").innerText =
+  localStorage.getItem("user");
+
+/* MENU */
+function toggleMenu(){
+  let m = document.getElementById("adminMenu");
+  m.style.display = (m.style.display==="block")?"none":"block";
 }
 
-/* PROJECTS GRID LIKE IMAGE */
-function addProject(){
-  let d=getP();
-  let user=document.getElementById("user").value;
-  let name=document.getElementById("name").value;
-  let link=document.getElementById("link").value;
+/* SETTINGS */
+function openSettings(){
+  let old = prompt("Enter current password:");
 
-  if(!user||!name||!link) return;
+  if(old !== localStorage.getItem("admin_pass")){
+    alert("Wrong password!");
+    return;
+  }
 
-  if(!link.startsWith("http")) link="https://"+link;
+  let newPass = prompt("Enter new password:");
+  if(newPass){
+    localStorage.setItem("admin_pass", newPass);
+    alert("Password updated!");
+  }
 
-  d.push({id:Date.now(),user,name,link});
-  saveP(d);
-  renderProjects();
+  document.getElementById("adminMenu").style.display="none";
 }
 
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+  location.href="index.html";
+}
+
+/* DATA */
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
+}
+
+function save(d){
+  localStorage.setItem("projects", JSON.stringify(d));
+}
+
+/* ADD */
+function add(){
+  let d = getData();
+
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
+
+  if(!user || !name || !link){
+    alert("Fill all");
+    return;
+  }
+
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
+
+  d.push({id:Date.now(), user, name, link});
+  save(d);
+  render();
+}
+
+/* DELETE */
 function delProject(id){
-  saveP(getP().filter(x=>x.id!==id));
-  renderProjects();
+  let d = getData().filter(x=>x.id!==id);
+  save(d);
+  render();
 }
 
-function renderProjects(){
+/* EDIT */
+function editProject(id){
+  let d = getData();
+  let p = d.find(x=>x.id===id);
 
-  let d=getP();
-  let q=document.getElementById("search").value?.toLowerCase()||"";
+  let n = prompt("Edit name", p.name);
+  let l = prompt("Edit link", p.link);
 
-  let filtered=d.filter(p=>
-    p.user.toLowerCase().includes(q)||p.name.toLowerCase().includes(q)
+  if(n) p.name=n;
+  if(l){
+    if(!l.startsWith("http")) l="https://"+l;
+    p.link=l;
+  }
+
+  save(d);
+  render();
+}
+
+/* STATS */
+function updateStats(d){
+  let users = new Set(d.map(p=>p.user));
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalProjects").innerText = d.length;
+}
+
+/* RENDER */
+function render(){
+  let d = getData();
+  let q = document.getElementById("search").value?.toLowerCase() || "";
+
+  let filtered = d.filter(p =>
+    p.user.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q)
   );
 
-  let users=getU();
+  updateStats(filtered);
 
-  let box=document.getElementById("list");
-  box.innerHTML="";
+  let box = document.getElementById("list");
+  box.innerHTML = "";
 
-  users.forEach(u=>{
+  let grouped = {};
 
-    let userProjects=filtered.filter(p=>p.user===u);
-
-    let html="";
-
-    userProjects.forEach(p=>{
-      html+=`
-        <div class='projectItem'>
-          <b>${p.name}</b><br>
-          <a href='${p.link}' target='_blank'>open</a><br>
-          <span class='delete' onclick='delProject(${p.id})'>delete</span>
-        </div>
-      `;
-    });
-
-    box.innerHTML+=`
-      <div class='userColumn'>
-        <h3>${u}</h3>
-        ${html || '<small>No projects</small>'}
-      </div>
-    `;
-
+  filtered.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user]=[];
+    grouped[p.user].push(p);
   });
 
-  stats();
+  for(let u in grouped){
+
+    let rows = grouped[u].map(p=>`
+      <tr>
+        <td>${p.name}</td>
+
+        <td>
+          <a class="link" href="${p.link}" target="_blank">
+            ${p.link}
+          </a>
+        </td>
+
+        <td>
+          <span class="delete" onclick="delProject(${p.id})">del</span>
+          <span class="edit" onclick="editProject(${p.id})">edit</span>
+        </td>
+      </tr>
+    `).join("");
+
+    box.innerHTML += `
+      <div class="card">
+        <h3>👤 ${u}</h3>
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
+    `;
+  }
 }
 
-function stats(){
-  let d=getP();
-  let u=new Set(d.map(x=>x.user));
-  document.getElementById("uCount").innerText=u.size;
-  document.getElementById("pCount").innerText=d.length;
-}
-
-function render(){renderProjects();}
-
-renderUsers();
-renderProjects();
+render();
 
 </script>
 
