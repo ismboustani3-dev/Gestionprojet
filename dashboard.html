@@ -12,6 +12,7 @@ body{
   color:white;
 }
 
+/* SIDEBAR */
 .sidebar{
   position:fixed;
   left:0;
@@ -24,8 +25,11 @@ body{
   border-right:1px solid rgba(255,255,255,0.08);
 }
 
-.sidebar h2{color:#38bdf8;}
+.sidebar h2{
+  color:#38bdf8;
+}
 
+/* TOPBAR */
 .topbar{
   position:fixed;
   top:0;
@@ -41,6 +45,7 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
+/* ADMIN MENU */
 #adminMenu{
   display:none;
   position:absolute;
@@ -50,11 +55,10 @@ body{
   padding:10px;
   border-radius:10px;
   border:1px solid rgba(255,255,255,0.1);
-  width:160px;
 }
 
 #adminMenu button{
-  width:100%;
+  width:120px;
   margin:5px 0;
   padding:8px;
   border:none;
@@ -64,8 +68,11 @@ body{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
 }
 
-#adminMenu button:last-child{background:#ef4444;}
+#adminMenu button:last-child{
+  background:#ef4444;
+}
 
+/* SEARCH */
 #search{
   padding:8px;
   border-radius:8px;
@@ -75,13 +82,19 @@ body{
   width:200px;
 }
 
+/* MAIN */
 .main{
   margin-left:240px;
   margin-top:60px;
   padding:20px;
 }
 
-.stats{display:flex;gap:15px;}
+/* STATS */
+.stats{
+  display:flex;
+  gap:15px;
+}
+
 .stat{
   flex:1;
   background: rgba(17,24,39,0.6);
@@ -89,8 +102,15 @@ body{
   border-radius:15px;
   text-align:center;
   border:1px solid rgba(56,189,248,0.2);
+  transition:0.3s;
 }
 
+.stat:hover{
+  transform:translateY(-5px);
+  border-color:#38bdf8;
+}
+
+/* GRID */
 #list{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
@@ -98,48 +118,118 @@ body{
   margin-top:15px;
 }
 
+/* CARD */
 .card{
   background: rgba(17,24,39,0.6);
+  backdrop-filter: blur(10px);
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.08);
+  transition:0.3s;
 }
 
-table{width:100%;margin-top:10px;border-collapse:collapse;}
-th{text-align:left;padding:8px;color:#38bdf8;}
-td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.card:hover{
+  transform:translateY(-6px);
+  border-color:#38bdf8;
+}
 
-input,button{padding:10px;margin:5px;border:none;border-radius:10px;}
-input{background:#111827;color:white;}
-button{background:linear-gradient(45deg,#38bdf8,#0ea5e9);color:white;cursor:pointer;}
+/* TABLE */
+table{
+  width:100%;
+  margin-top:10px;
+  border-collapse:collapse;
+}
 
-.delete{color:#ef4444;cursor:pointer;}
-.edit{color:#facc15;cursor:pointer;margin-left:10px;}
+th{
+  text-align:left;
+  padding:8px;
+  color:#38bdf8;
+}
 
+td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* INPUTS */
+input,button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+}
+
+input{
+  background:#111827;
+  color:white;
+}
+
+button{
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
+}
+
+/* OPEN BUTTON */
+.openBtn{
+  padding:6px 12px;
+  border-radius:8px;
+  border:none;
+  background:#38bdf8;
+  color:white;
+  cursor:pointer;
+}
+
+/* ACTION */
+.delete{ color:#ef4444; cursor:pointer; }
+.edit{ color:#facc15; cursor:pointer; margin-left:10px; }
+
+/* ANIMATION */
+.card, .stat{
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Ultra Admin</h2>
-  <button onclick="deleteUser()">🗑 Delete User</button>
 </div>
 
+<!-- TOPBAR -->
 <div class="topbar">
+
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
 
   <div style="position:relative;">
     👤 <span id="username"></span>
-    <button onclick="toggleMenu()">⚙️ Admin</button>
 
+    <button onclick="toggleMenu()" style="margin-left:10px;">
+      ⚙️ Admin
+    </button>
+
+    <!-- ADMIN MENU -->
     <div id="adminMenu">
-      <button onclick="openSettings()">Settings</button>
+      <button onclick="settings()">Settings</button>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
+
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
   <div class="stats">
@@ -161,97 +251,146 @@ button{background:linear-gradient(45deg,#38bdf8,#0ea5e9);color:white;cursor:poin
 
 <script>
 
-if(!localStorage.getItem("admin_pass")) localStorage.setItem("admin_pass","1234");
-if(localStorage.getItem("auth") !== "true") location.href="index.html";
-
-document.getElementById("username").innerText = localStorage.getItem("user");
-
-function toggleMenu(){
-  let m=document.getElementById("adminMenu");
-  m.style.display = m.style.display==="block"?"none":"block";
-}
-
-function openSettings(){
-  let old=prompt("Enter password");
-  if(old!==localStorage.getItem("admin_pass")) return alert("Wrong password");
-  let n=prompt("New password");
-  if(n) localStorage.setItem("admin_pass",n);
-}
-
-function logout(){
-  localStorage.clear();
+/* AUTH */
+if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-function getData(){return JSON.parse(localStorage.getItem("projects"))||[];}
-function save(d){localStorage.setItem("projects",JSON.stringify(d));}
+document.getElementById("username").innerText =
+  localStorage.getItem("user");
 
+/* DATA */
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
+}
+
+function save(d){
+  localStorage.setItem("projects", JSON.stringify(d));
+}
+
+/* MENU */
+function toggleMenu(){
+  let m = document.getElementById("adminMenu");
+  m.style.display = (m.style.display==="block")?"none":"block";
+}
+
+/* SETTINGS (CHANGE PASSWORD) */
+function settings(){
+  let pass = prompt("Enter new admin password:");
+  if(pass){
+    localStorage.setItem("admin_pass", pass);
+    alert("Password updated!");
+  }
+  document.getElementById("adminMenu").style.display="none";
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+  location.href="index.html";
+}
+
+/* ADD */
 function add(){
-  let d=getData();
-  let user=user.value;
-  let name=name.value;
-  let link=link.value;
+  let d = getData();
 
-  if(!user||!name||!link) return;
-  if(!link.startsWith("http")) link="https://"+link;
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
-  d.push({id:Date.now(),user,name,link});
+  if(!user || !name || !link){
+    alert("Fill all");
+    return;
+  }
+
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
+
+  d.push({id:Date.now(), user, name, link});
   save(d);
   render();
 }
 
+/* DELETE */
 function delProject(id){
-  save(getData().filter(x=>x.id!==id));
-  render();
-}
-
-/* NEW: DELETE USER */
-function deleteUser(){
-  let u=prompt("Enter username to delete:");
-  if(!u) return;
-
-  let d=getData().filter(p=>p.user!==u);
+  let d = getData().filter(x=>x.id!==id);
   save(d);
-
   render();
 }
 
-function updateStats(d){
-  let users=new Set(d.map(p=>p.user));
-  document.getElementById("totalUsers").innerText=users.size;
-  document.getElementById("totalProjects").innerText=d.length;
+/* EDIT */
+function editProject(id){
+  let d = getData();
+  let p = d.find(x=>x.id===id);
+
+  let n = prompt("Edit name", p.name);
+  let l = prompt("Edit link", p.link);
+
+  if(n) p.name=n;
+  if(l){
+    if(!l.startsWith("http")) l="https://"+l;
+    p.link=l;
+  }
+
+  save(d);
+  render();
 }
 
-function render(){
-  let d=getData();
-  let q=document.getElementById("search").value?.toLowerCase()||"";
+/* STATS */
+function updateStats(d){
+  let users = new Set(d.map(p=>p.user));
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalProjects").innerText = d.length;
+}
 
-  let filtered=d.filter(p=>p.user.toLowerCase().includes(q)||p.name.toLowerCase().includes(q));
+/* RENDER */
+function render(){
+  let d = getData();
+  let q = document.getElementById("search").value?.toLowerCase() || "";
+
+  let filtered = d.filter(p =>
+    p.user.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q)
+  );
 
   updateStats(filtered);
 
-  let box=document.getElementById("list");
-  box.innerHTML="";
+  let box = document.getElementById("list");
+  box.innerHTML = "";
 
-  let groups={};
+  let grouped = {};
+
   filtered.forEach(p=>{
-    if(!groups[p.user]) groups[p.user]=[];
-    groups[p.user].push(p);
+    if(!grouped[p.user]) grouped[p.user]=[];
+    grouped[p.user].push(p);
   });
 
-  for(let u in groups){
-    let rows=groups[u].map(p=>`
+  for(let u in grouped){
+
+    let rows = grouped[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-        <td><a href='${p.link}' target='_blank'>open</a></td>
-        <td><span class='delete' onclick='delProject(${p.id})'>del</span></td>
+        <td><a href="${p.link}" target="_blank"><button class="openBtn">OPEN</button></a></td>
+        <td>
+          <span class="delete" onclick="delProject(${p.id})">del</span>
+          <span class="edit" onclick="editProject(${p.id})">edit</span>
+        </td>
       </tr>
     `).join("");
 
-    box.innerHTML+=`
-      <div class='card'>
+    box.innerHTML += `
+      <div class="card">
         <h3>👤 ${u}</h3>
-        <table>${rows}</table>
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
       </div>
     `;
   }
