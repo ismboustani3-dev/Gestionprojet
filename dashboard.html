@@ -2,173 +2,181 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Pro Admin Dashboard</title>
+<title>Ultra Admin Pro</title>
 
 <style>
-body{
+*{
   margin:0;
-  font-family:'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top,#0a0f1c,#050814);
+  padding:0;
+  box-sizing:border-box;
+  font-family:Segoe UI;
+}
+
+body{
+  background:#0a0f1c;
   color:white;
+  display:flex;
 }
 
 /* SIDEBAR */
 .sidebar{
+  width:260px;
+  height:100vh;
+  background:#0f172a;
+  padding:20px;
   position:fixed;
   left:0;
   top:0;
-  width:240px;
-  height:100vh;
-  background: rgba(17,24,39,0.65);
-  backdrop-filter: blur(15px);
-  padding:20px;
-  border-right:1px solid rgba(255,255,255,0.08);
+  border-right:1px solid rgba(255,255,255,0.05);
 }
 
 .sidebar h2{
   color:#38bdf8;
+  margin-bottom:20px;
 }
 
 /* TOPBAR */
 .topbar{
   position:fixed;
-  top:0;
-  left:240px;
+  left:260px;
   right:0;
-  height:60px;
-  background: rgba(17,24,39,0.5);
-  backdrop-filter: blur(15px);
+  height:65px;
+  background:#0f172a;
   display:flex;
-  justify-content:space-between;
   align-items:center;
+  justify-content:space-between;
   padding:0 20px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
-/* ADMIN MENU */
-#adminMenu{
-  display:none;
-  position:absolute;
-  right:0;
-  top:40px;
-  background:#111827;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-  width:160px;
-}
-
-#adminMenu button{
-  width:100%;
-  margin:5px 0;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:white;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-}
-
-#adminMenu button:last-child{
-  background:#ef4444;
-}
-
-/* SEARCH */
-#search{
-  padding:8px;
-  border-radius:8px;
-  border:none;
-  background:#111827;
-  color:white;
-  width:200px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
 /* MAIN */
 .main{
-  margin-left:240px;
-  margin-top:60px;
+  margin-left:260px;
+  margin-top:65px;
   padding:20px;
+  width:100%;
+}
+
+/* SEARCH */
+#search{
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#111827;
+  color:white;
+  width:220px;
+}
+
+/* USER MENU */
+.userBox{
+  position:relative;
+}
+
+#adminMenu{
+  display:none;
+  position:absolute;
+  right:0;
+  top:45px;
+  background:#111827;
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  width:170px;
+  overflow:hidden;
+}
+
+#adminMenu button{
+  width:100%;
+  padding:10px;
+  border:none;
+  cursor:pointer;
+  background:#111827;
+  color:white;
+  text-align:left;
+}
+
+#adminMenu button:hover{
+  background:#1f2937;
 }
 
 /* STATS */
 .stats{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
   gap:15px;
+  margin-bottom:20px;
 }
 
 .stat{
-  flex:1;
-  background: rgba(17,24,39,0.6);
-  padding:18px;
+  background:#111827;
+  padding:20px;
   border-radius:15px;
-  text-align:center;
-  border:1px solid rgba(56,189,248,0.2);
-}
-
-/* GRID */
-#list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
-  gap:15px;
-  margin-top:15px;
+  border:1px solid rgba(255,255,255,0.05);
 }
 
 /* CARD */
 .card{
-  background: rgba(17,24,39,0.6);
-  backdrop-filter: blur(10px);
-  padding:15px;
+  background:#111827;
+  padding:20px;
   border-radius:15px;
-  border:1px solid rgba(255,255,255,0.08);
+  margin-bottom:20px;
+  border:1px solid rgba(255,255,255,0.05);
+}
+
+/* INPUTS */
+input{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:10px;
+  border:none;
+  background:#0b1220;
+  color:white;
+}
+
+/* BUTTON */
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
+  background:#38bdf8;
+  color:white;
+  cursor:pointer;
 }
 
 /* TABLE */
 table{
   width:100%;
-  margin-top:10px;
   border-collapse:collapse;
+  margin-top:10px;
 }
 
 th{
   text-align:left;
-  padding:8px;
+  padding:10px;
   color:#38bdf8;
 }
 
 td{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
-/* INPUTS */
-input,button{
   padding:10px;
-  margin:5px;
-  border:none;
-  border-radius:10px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
 }
-
-input{
-  background:#111827;
-  color:white;
-}
-
-button{
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-  color:white;
-  cursor:pointer;
-}
-
-/* ACTION */
-.delete{ color:#ef4444; cursor:pointer; }
-.edit{ color:#facc15; cursor:pointer; margin-left:10px; }
 
 /* LINK */
-.link{
+a{
   color:#38bdf8;
-  text-decoration:underline;
   word-break:break-all;
 }
+
+/* ACTIONS */
+.delete{color:#ef4444;cursor:pointer;margin-right:10px;}
+.edit{color:#facc15;cursor:pointer;}
+
+.copyBtn{
+  margin-top:5px;
+  font-size:12px;
+  padding:5px 8px;
+}
+
 </style>
 </head>
 
@@ -182,12 +190,11 @@ button{
 <!-- TOPBAR -->
 <div class="topbar">
 
-  <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
+  <input id="search" placeholder="Search..." oninput="render()">
 
-  <div style="position:relative;">
+  <div class="userBox">
     👤 <span id="username"></span>
-
-    <button onclick="toggleMenu()" style="margin-left:10px;">⚙️ Admin</button>
+    <button onclick="toggleMenu()">⚙</button>
 
     <div id="adminMenu">
       <button onclick="openSettings()">Settings</button>
@@ -201,12 +208,12 @@ button{
 <div class="main">
 
   <div class="stats">
-    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
-    <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
+    <div class="stat">👤 Users <div id="totalUsers">0</div></div>
+    <div class="stat">📁 Projects <div id="totalProjects">0</div></div>
   </div>
 
   <div class="card">
-    <h3>➕ Add Project</h3>
+    <h3>Add Project</h3>
     <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
@@ -219,48 +226,43 @@ button{
 
 <script>
 
-/* INIT PASSWORD */
+/* PASSWORD */
 if(!localStorage.getItem("admin_pass")){
   localStorage.setItem("admin_pass","1234");
 }
 
 /* AUTH */
-if(localStorage.getItem("auth") !== "true"){
+if(localStorage.getItem("auth")!=="true"){
   location.href="index.html";
 }
 
 document.getElementById("username").innerText =
-  localStorage.getItem("user");
+localStorage.getItem("user");
 
 /* MENU */
 function toggleMenu(){
   let m=document.getElementById("adminMenu");
-  m.style.display=(m.style.display==="block")?"none":"block";
+  m.style.display = m.style.display==="block"?"none":"block";
 }
 
 /* SETTINGS */
 function openSettings(){
-
-  let old=prompt("Enter current password:");
-
+  let old=prompt("Enter password");
   if(old!==localStorage.getItem("admin_pass")){
-    alert("Wrong password!");
+    alert("Wrong password");
     return;
   }
 
-  let np=prompt("New password:");
+  let np=prompt("New password");
   if(np){
     localStorage.setItem("admin_pass",np);
-    alert("Password updated!");
+    alert("Updated");
   }
-
-  document.getElementById("adminMenu").style.display="none";
 }
 
 /* LOGOUT */
 function logout(){
-  localStorage.removeItem("auth");
-  localStorage.removeItem("user");
+  localStorage.clear();
   location.href="index.html";
 }
 
@@ -277,18 +279,13 @@ function save(d){
 function add(){
   let d=getData();
 
-  let user=document.getElementById("user").value;
-  let name=document.getElementById("name").value;
-  let link=document.getElementById("link").value;
+  let user=userInput.value;
+  let name=nameInput.value;
+  let link=linkInput.value;
 
-  if(!user||!name||!link){
-    alert("Fill all");
-    return;
-  }
+  if(!user||!name||!link)return;
 
-  if(!link.startsWith("http")){
-    link="https://"+link;
-  }
+  if(!link.startsWith("http"))link="https://"+link;
 
   d.push({id:Date.now(),user,name,link});
   save(d);
@@ -297,8 +294,7 @@ function add(){
 
 /* DELETE */
 function delProject(id){
-  let d=getData().filter(x=>x.id!==id);
-  save(d);
+  save(getData().filter(x=>x.id!==id));
   render();
 }
 
@@ -307,29 +303,26 @@ function editProject(id){
   let d=getData();
   let p=d.find(x=>x.id===id);
 
-  let n=prompt("Edit name",p.name);
-  let l=prompt("Edit link",p.link);
+  let n=prompt("Name",p.name);
+  let l=prompt("Link",p.link);
 
-  if(n) p.name=n;
-  if(l){
-    if(!l.startsWith("http")) l="https://"+l;
-    p.link=l;
-  }
+  if(n)p.name=n;
+  if(l)p.link=l;
 
   save(d);
   render();
 }
 
-/* COPY LINK */
-function copyLink(link){
-  navigator.clipboard.writeText(link);
-  alert("Copied!");
+/* COPY */
+function copyLink(l){
+  navigator.clipboard.writeText(l);
 }
 
 /* STATS */
 function updateStats(d){
-  let users=new Set(d.map(p=>p.user));
-  document.getElementById("totalUsers").innerText=users.size;
+  document.getElementById("totalUsers").innerText=
+  new Set(d.map(x=>x.user)).size;
+
   document.getElementById("totalProjects").innerText=d.length;
 }
 
@@ -337,22 +330,22 @@ function updateStats(d){
 function render(){
 
   let d=getData();
-  let q=document.getElementById("search").value?.toLowerCase()||"";
+  let q=search.value?.toLowerCase()||"";
 
-  let filtered=d.filter(p=>
+  let f=d.filter(p=>
     p.user.toLowerCase().includes(q)||
     p.name.toLowerCase().includes(q)
   );
 
-  updateStats(filtered);
+  updateStats(f);
 
   let box=document.getElementById("list");
   box.innerHTML="";
 
   let grouped={};
 
-  filtered.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user]=[];
+  f.forEach(p=>{
+    if(!grouped[p.user])grouped[p.user]=[];
     grouped[p.user].push(p);
   });
 
@@ -362,9 +355,9 @@ function render(){
       <tr>
         <td>${p.name}</td>
         <td>
-          <a class="link" href="${p.link}" target="_blank">${p.link}</a>
+          <a href="${p.link}" target="_blank">${p.link}</a>
           <br>
-          <button onclick="copyLink('${p.link}')">Copy</button>
+          <button class="copyBtn" onclick="copyLink('${p.link}')">copy</button>
         </td>
         <td>
           <span class="delete" onclick="delProject(${p.id})">del</span>
@@ -375,7 +368,7 @@ function render(){
 
     box.innerHTML+=`
       <div class="card">
-        <h3>👤 ${u}</h3>
+        <h3>${u}</h3>
         <table>
           <tr>
             <th>Project</th>
