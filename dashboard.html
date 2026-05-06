@@ -2,118 +2,96 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Admin Pro</title>
+<title>Admin Nested System</title>
 
 <style>
 body{
   margin:0;
-  font-family:'Segoe UI', sans-serif;
-  background: radial-gradient(circle at top,#0b1220,#050814);
+  font-family:Segoe UI;
+  background:#0b1220;
   color:white;
 }
 
-/* SIDEBAR */
 .sidebar{
   position:fixed;
-  width:240px;
-  height:100vh;
-  background:rgba(17,24,39,0.7);
-  backdrop-filter: blur(20px);
-  padding:20px;
-  border-right:1px solid rgba(255,255,255,0.08);
-}
-
-.sidebar h2{color:#38bdf8;}
-
-.btn{
-  width:100%;
-  padding:12px;
-  margin:6px 0;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  background:rgba(56,189,248,0.15);
-  color:white;
-  transition:0.3s;
-}
-
-.btn:hover{
-  background:#38bdf8;
-  transform:translateX(5px);
-}
-
-/* TOPBAR */
-.topbar{
-  position:fixed;
-  left:240px;
-  right:0;
+  left:0;
   top:0;
-  height:60px;
-  background:rgba(15,23,42,0.8);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 20px;
+  width:220px;
+  height:100vh;
+  background:#111827;
+  padding:15px;
 }
 
-/* MAIN */
-.main{
-  margin-left:240px;
-  margin-top:60px;
+.container{
+  margin-left:220px;
   padding:20px;
 }
 
-/* CARD */
-.card{
-  background:rgba(17,24,39,0.8);
-  backdrop-filter:blur(20px);
-  padding:15px;
-  margin:10px 0;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,0.08);
-  transition:0.3s;
+/* TABLE USERS */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111827;
+  border-radius:12px;
+  overflow:hidden;
 }
 
-.card:hover{
-  transform:translateY(-3px);
-  border-color:#38bdf8;
-}
-
-/* INPUT */
-input{
-  padding:10px;
-  margin:5px;
-  border-radius:10px;
-  border:none;
-  background:#0f172a;
-  color:white;
-  outline:none;
-}
-
-button{
-  padding:10px 14px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
-  color:white;
-}
-
-/* LINK */
-a{
+th{
+  text-align:left;
+  padding:12px;
   color:#38bdf8;
-  word-break:break-all;
+  border-bottom:1px solid #1f2937;
 }
 
-/* HIDE */
-.hidden{display:none;}
+td{
+  padding:12px;
+  border-bottom:1px solid #1f2937;
+}
 
-.badge{
-  display:inline-block;
-  padding:4px 10px;
-  border-radius:999px;
-  background:rgba(56,189,248,0.2);
+tr:hover{
+  background:#0f172a;
+  cursor:pointer;
+}
+
+/* PROJECT BOX */
+.projects{
+  margin-top:10px;
+  background:#0f172a;
+  padding:10px;
+  border-radius:10px;
+}
+
+/* BUTTONS */
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  margin:2px;
+  color:white;
+}
+
+.edit{background:#facc15;}
+.del{background:#ef4444;}
+.add{background:#38bdf8;}
+
+input{
+  padding:8px;
+  margin:4px;
+  border-radius:8px;
+  border:none;
+  background:#1f2937;
+  color:white;
+}
+
+.userRow{
+  font-weight:bold;
+  color:#38bdf8;
+}
+
+.small{
   font-size:12px;
+  opacity:0.8;
 }
 
 </style>
@@ -121,45 +99,35 @@ a{
 
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>⚡ Admin</h2>
-
-  <button class="btn" onclick="App.show('projects')">📁 Projects</button>
-  <button class="btn" onclick="App.show('users')">👤 Users</button>
-  <button class="btn" onclick="App.logout()">🚪 Logout</button>
+  <h2>⚡ ADMIN</h2>
+  <button onclick="logout()">Logout</button>
 </div>
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <span>Ultra Admin Panel</span>
-  👤 <span id="username"></span>
+<div class="container">
+
+<h2>👤 Users Management (Nested Projects)</h2>
+
+<div>
+  <input id="u" placeholder="User">
+  <input id="p" placeholder="Project">
+  <input id="l" placeholder="Link">
+  <button class="add" onclick="add()">Add</button>
 </div>
 
-<!-- MAIN -->
-<div class="main">
+<br>
 
-<!-- PROJECTS -->
-<div id="projectsView">
+<table>
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Projects</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
 
-  <div class="card">
-    <h3>➕ Add Project</h3>
-    <input id="pUser" placeholder="Username">
-    <input id="pName" placeholder="Project name">
-    <input id="pLink" placeholder="Project link">
-    <button onclick="Projects.add()">Add</button>
-  </div>
-
-  <div id="projectsList"></div>
-</div>
-
-<!-- USERS -->
-<div id="usersView" class="hidden">
-  <div class="card">
-    <h3>👤 Users Management</h3>
-    <div id="usersList"></div>
-  </div>
-</div>
+  <tbody id="table"></tbody>
+</table>
 
 </div>
 
@@ -170,117 +138,121 @@ if(localStorage.getItem("auth")!=="true"){
   location.href="index.html";
 }
 
-document.getElementById("username").innerText =
-  localStorage.getItem("user");
-
 /* STORAGE */
-const Storage={
-  get:k=>JSON.parse(localStorage.getItem(k))||[],
-  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))
-};
+function get(){
+  return JSON.parse(localStorage.getItem("data"))||[];
+}
+function save(d){
+  localStorage.setItem("data",JSON.stringify(d));
+}
 
-if(!localStorage.getItem("projects")) Storage.set("projects",[]);
-if(!localStorage.getItem("users")) Storage.set("users",[
-  {username:"user1",password:"1234"},
-  {username:"user2",password:"1234"}
-]);
+/* INIT SAMPLE */
+if(!localStorage.getItem("data")){
+  save([
+    {id:1,user:"user1",projects:[
+      {pid:11,name:"site A",link:"https://google.com"}
+    ]},
+    {id:2,user:"user2",projects:[
+      {pid:21,name:"app B",link:"https://github.com"}
+    ]}
+  ]);
+}
 
-/* APP */
-const App={
-  show(v){
-    document.getElementById("projectsView").classList.add("hidden");
-    document.getElementById("usersView").classList.add("hidden");
+/* ADD */
+function add(){
+  let d=get();
 
-    document.getElementById(v+"View").classList.remove("hidden");
+  let u=document.getElementById("u").value;
+  let p=document.getElementById("p").value;
+  let l=document.getElementById("l").value;
 
-    if(v==="projects") Projects.render();
-    if(v==="users") Users.render();
-  },
+  if(!l.startsWith("http")) l="https://"+l;
 
-  logout(){
-    localStorage.clear();
-    location.href="index.html";
-  }
-};
+  let user=d.find(x=>x.user===u);
 
-/* PROJECTS */
-const Projects={
-  add(){
-    let d=Storage.get("projects");
-
-    let u=document.getElementById("pUser").value;
-    let n=document.getElementById("pName").value;
-    let l=document.getElementById("pLink").value;
-
-    if(!l.startsWith("http")) l="https://"+l;
-
-    d.push({id:Date.now(),user:u,name:n,link:l});
-    Storage.set("projects",d);
-    this.render();
-  },
-
-  delete(id){
-    Storage.set("projects",Storage.get("projects").filter(x=>x.id!==id));
-    this.render();
-  },
-
-  render(){
-    let box=document.getElementById("projectsList");
-    let d=Storage.get("projects");
-    box.innerHTML="";
-
-    d.forEach(p=>{
-      box.innerHTML+=`
-        <div class="card">
-          <span class="badge">${p.user}</span>
-          <h3>${p.name}</h3>
-          <a href="${p.link}" target="_blank">${p.link}</a><br><br>
-          <button onclick="Projects.delete(${p.id})">Delete</button>
-        </div>
-      `;
+  if(!user){
+    d.push({
+      id:Date.now(),
+      user:u,
+      projects:[{pid:Date.now(),name:p,link:l}]
     });
+  }else{
+    user.projects.push({pid:Date.now(),name:p,link:l});
   }
-};
 
-/* USERS */
-const Users={
-  delete(u){
-    Storage.set("users",Storage.get("users").filter(x=>x.username!==u));
-    this.render();
-  },
+  save(d);
+  render();
+}
 
-  edit(u){
-    let d=Storage.get("users");
-    let user=d.find(x=>x.username===u);
+/* DELETE USER */
+function delUser(id){
+  save(get().filter(x=>x.id!==id));
+  render();
+}
 
-    let np=prompt("New password",user.password);
-    if(np) user.password=np;
+/* DELETE PROJECT */
+function delProject(uid,pid){
+  let d=get();
+  let u=d.find(x=>x.id===uid);
 
-    Storage.set("users",d);
-    this.render();
-  },
+  u.projects=u.projects.filter(p=>p.pid!==pid);
 
-  render(){
-    let box=document.getElementById("usersList");
-    let d=Storage.get("users");
-    box.innerHTML="";
+  save(d);
+  render();
+}
 
-    d.forEach(u=>{
-      box.innerHTML+=`
-        <div class="card">
-          <span class="badge">USER</span>
-          <h3>${u.username}</h3>
-          <p>${u.password}</p>
+/* EDIT PROJECT */
+function editProject(uid,pid){
+  let d=get();
+  let u=d.find(x=>x.id===uid);
+  let p=u.projects.find(x=>x.pid===pid);
 
-          <button onclick="Users.edit('${u.username}')">Edit</button>
-          <button onclick="Users.delete('${u.username}')">Delete</button>
-        </div>
-      `;
-    });
-  }
-};
+  let n=prompt("Project name",p.name);
+  let l=prompt("Link",p.link);
 
-Projects.render();
+  if(n) p.name=n;
+  if(l) p.link=l;
+
+  save(d);
+  render();
+}
+
+/* RENDER */
+function render(){
+  let d=get();
+  let box=document.getElementById("table");
+  box.innerHTML="";
+
+  d.forEach(u=>{
+
+    let projects=u.projects.map(p=>`
+      <div class="projects">
+        📁 ${p.name}<br>
+        <span class="small">${p.link}</span><br>
+        <button class="edit" onclick="editProject(${u.id},${p.pid})">Edit</button>
+        <button class="del" onclick="delProject(${u.id},${p.pid})">Delete</button>
+      </div>
+    `).join("");
+
+    box.innerHTML+=`
+      <tr>
+        <td class="userRow">${u.user}</td>
+        <td>${projects}</td>
+        <td>
+          <button class="del" onclick="delUser(${u.id})">Delete User</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.clear();
+  location.href="index.html";
+}
+
+render();
 
 </script>
 
