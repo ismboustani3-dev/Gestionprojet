@@ -40,13 +40,12 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:0 20px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 /* MENU */
 #menu{
   position:absolute;
-  top:55px;
+  top:50px;
   right:20px;
   background:#111827;
   padding:10px;
@@ -56,17 +55,9 @@ body{
 }
 
 #menu button{
-  width:130px;
+  width:120px;
   margin:5px 0;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:white;
 }
-
-#menu button:first-child{ background:#38bdf8; }
-#menu button:last-child{ background:#ef4444; }
 
 /* MAIN */
 .main{
@@ -87,7 +78,6 @@ body{
   padding:18px;
   border-radius:15px;
   text-align:center;
-  border:1px solid rgba(56,189,248,0.2);
 }
 
 /* CARD */
@@ -95,26 +85,7 @@ body{
   background: rgba(17,24,39,0.6);
   padding:15px;
   border-radius:15px;
-  border:1px solid rgba(255,255,255,0.08);
   margin-top:15px;
-}
-
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-}
-
-th{
-  text-align:left;
-  color:#38bdf8;
-  padding:8px;
-}
-
-td{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 /* INPUT */
@@ -136,11 +107,17 @@ button{
   cursor:pointer;
 }
 
-/* ACTION */
-span{
-  cursor:pointer;
-  margin:0 5px;
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
 }
+
+th{ color:#38bdf8; text-align:left; padding:8px; }
+td{ padding:8px; border-bottom:1px solid #222; }
+
+span{ cursor:pointer; margin:0 5px; }
+
 </style>
 </head>
 
@@ -153,12 +130,12 @@ span{
 <div class="topbar">
   <input id="search" placeholder="Search..." oninput="render()">
 
-  <div style="display:flex;align-items:center;gap:10px;position:relative;">
+  <div style="position:relative;">
     👤 <span id="username"></span>
     <button onclick="toggleMenu()">⚙️</button>
 
     <div id="menu">
-      <button onclick="openSettings()">Settings</button>
+      <button onclick="settings()">Settings</button>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
@@ -171,7 +148,7 @@ span{
   </div>
 
   <div class="card">
-    <h3>➕ Add Project</h3>
+    <h3>Add Project</h3>
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
@@ -183,7 +160,7 @@ span{
 
 <script>
 
-/* INIT DB */
+/* DB SYSTEM */
 function getDB(){
   return JSON.parse(localStorage.getItem("db")) || {
     users: [],
@@ -196,7 +173,7 @@ function saveDB(db){
 }
 
 /* INIT USERS */
-(function init(){
+(function(){
   let db = getDB();
 
   if(db.users.length === 0){
@@ -212,10 +189,11 @@ function saveDB(db){
 /* CHECK LOGIN */
 let db = getDB();
 if(!db.currentUser){
-  location.href = "index.html";
+  location.href="index.html";
 }
 
-function getUser(db){
+function getUser(){
+  let db = getDB();
   return db.users.find(u => u.username === db.currentUser);
 }
 
@@ -225,24 +203,24 @@ document.getElementById("username").innerText = db.currentUser;
 /* MENU */
 function toggleMenu(){
   let m = document.getElementById("menu");
-  m.style.display = (m.style.display==="block")?"none":"block";
+  m.style.display = m.style.display==="block"?"none":"block";
 }
 
 /* SETTINGS (USERNAME + PASSWORD) */
-function openSettings(){
+function settings(){
   let db = getDB();
-  let user = getUser(db);
+  let u = getUser();
 
-  let newUser = prompt("Username", user.username);
-  let newPass = prompt("Password", user.password);
+  let newU = prompt("Username", u.username);
+  let newP = prompt("Password", u.password);
 
-  if(newUser) user.username = newUser;
-  if(newPass) user.password = newPass;
+  if(newU) u.username = newU;
+  if(newP) u.password = newP;
 
-  db.currentUser = user.username;
+  db.currentUser = u.username;
 
   saveDB(db);
-  document.getElementById("username").innerText = user.username;
+  document.getElementById("username").innerText = u.username;
   document.getElementById("menu").style.display="none";
 }
 
@@ -257,7 +235,7 @@ function logout(){
 /* ADD PROJECT */
 function add(){
   let db = getDB();
-  let user = getUser(db);
+  let u = getUser();
 
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
@@ -266,7 +244,7 @@ function add(){
 
   if(!link.startsWith("http")) link="https://"+link;
 
-  user.projects.push({
+  u.projects.push({
     id:Date.now(),
     name,
     link
@@ -279,9 +257,9 @@ function add(){
 /* DELETE */
 function del(id){
   let db = getDB();
-  let user = getUser(db);
+  let u = getUser();
 
-  user.projects = user.projects.filter(p=>p.id!==id);
+  u.projects = u.projects.filter(p=>p.id!==id);
 
   saveDB(db);
   render();
@@ -290,17 +268,17 @@ function del(id){
 /* EDIT */
 function edit(id){
   let db = getDB();
-  let user = getUser(db);
+  let u = getUser();
 
-  let p = user.projects.find(x=>x.id===id);
+  let p = u.projects.find(x=>x.id===id);
 
   let n = prompt("Name", p.name);
   let l = prompt("Link", p.link);
 
-  if(n) p.name = n;
+  if(n) p.name=n;
   if(l){
     if(!l.startsWith("http")) l="https://"+l;
-    p.link = l;
+    p.link=l;
   }
 
   saveDB(db);
@@ -309,14 +287,13 @@ function edit(id){
 
 /* RENDER */
 function render(){
-  let db = getDB();
-  let user = getUser(db);
+  let u = getUser();
 
   let q = document.getElementById("search").value?.toLowerCase()||"";
 
-  let list = user.projects.filter(p=>p.name.toLowerCase().includes(q));
+  let list = u.projects.filter(p=>p.name.toLowerCase().includes(q));
 
-  document.getElementById("totalProjects").innerText = user.projects.length;
+  document.getElementById("totalProjects").innerText = u.projects.length;
 
   let box = document.getElementById("list");
   box.innerHTML = "";
@@ -334,7 +311,7 @@ function render(){
 
   box.innerHTML = `
     <div class="card">
-      <h3>User: ${user.username}</h3>
+      <h3>User: ${u.username}</h3>
       <table>
         <tr><th>Project</th><th>Link</th><th>Action</th></tr>
         ${rows}
