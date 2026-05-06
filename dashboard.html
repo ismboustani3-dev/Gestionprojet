@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin Nested System</title>
+<title>Firebase Admin Pro</title>
 
 <style>
 body{
@@ -12,10 +12,9 @@ body{
   color:white;
 }
 
+/* SIDEBAR */
 .sidebar{
   position:fixed;
-  left:0;
-  top:0;
   width:220px;
   height:100vh;
   background:#111827;
@@ -27,71 +26,58 @@ body{
   padding:20px;
 }
 
-/* TABLE USERS */
-table{
-  width:100%;
-  border-collapse:collapse;
+/* CARD */
+.card{
   background:#111827;
+  padding:15px;
   border-radius:12px;
-  overflow:hidden;
+  margin-bottom:15px;
 }
 
-th{
-  text-align:left;
-  padding:12px;
-  color:#38bdf8;
-  border-bottom:1px solid #1f2937;
-}
-
-td{
-  padding:12px;
-  border-bottom:1px solid #1f2937;
-}
-
-tr:hover{
-  background:#0f172a;
-  cursor:pointer;
-}
-
-/* PROJECT BOX */
-.projects{
-  margin-top:10px;
-  background:#0f172a;
-  padding:10px;
-  border-radius:10px;
-}
-
-/* BUTTONS */
-button{
-  padding:6px 10px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  margin:2px;
-  color:white;
-}
-
-.edit{background:#facc15;}
-.del{background:#ef4444;}
-.add{background:#38bdf8;}
-
+/* INPUT */
 input{
-  padding:8px;
-  margin:4px;
-  border-radius:8px;
+  padding:10px;
+  margin:5px;
   border:none;
+  border-radius:8px;
   background:#1f2937;
   color:white;
 }
 
-.userRow{
-  font-weight:bold;
-  color:#38bdf8;
+/* BUTTON */
+button{
+  padding:8px 12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:#38bdf8;
+  color:white;
 }
 
-.small{
-  font-size:12px;
-  opacity:0.8;
+.danger{background:#ef4444;}
+.edit{background:#facc15;}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th{
+  text-align:left;
+  color:#38bdf8;
+  padding:10px;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #1f2937;
+}
+
+/* LINK */
+a{
+  color:#38bdf8;
+  word-break:break-all;
 }
 
 </style>
@@ -106,153 +92,149 @@ input{
 
 <div class="container">
 
-<h2>👤 Users Management (Nested Projects)</h2>
+<h2>🔥 Firebase Admin Dashboard</h2>
 
-<div>
-  <input id="u" placeholder="User">
-  <input id="p" placeholder="Project">
-  <input id="l" placeholder="Link">
-  <button class="add" onclick="add()">Add</button>
+<!-- LOGIN -->
+<div id="loginBox" class="card">
+  <h3>Login</h3>
+  <input id="email" placeholder="email">
+  <input id="pass" type="password" placeholder="password">
+  <button onclick="login()">Login</button>
 </div>
 
-<br>
+<!-- DASHBOARD -->
+<div id="dash" style="display:none;">
 
-<table>
-  <thead>
-    <tr>
-      <th>User</th>
-      <th>Projects</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
+<!-- ADD PROJECT -->
+<div class="card">
+  <h3>Add Project</h3>
+  <input id="user" placeholder="User ID">
+  <input id="name" placeholder="Project name">
+  <input id="link" placeholder="Link">
+  <button onclick="addProject()">Add</button>
+</div>
 
-  <tbody id="table"></tbody>
-</table>
+<!-- DATA -->
+<div id="list"></div>
 
 </div>
+
+</div>
+
+<!-- FIREBASE -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 
 <script>
 
-/* AUTH */
-if(localStorage.getItem("auth")!=="true"){
-  location.href="index.html";
-}
+/* 🔥 FIREBASE CONFIG */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+};
 
-/* STORAGE */
-function get(){
-  return JSON.parse(localStorage.getItem("data"))||[];
-}
-function save(d){
-  localStorage.setItem("data",JSON.stringify(d));
-}
+firebase.initializeApp(firebaseConfig);
 
-/* INIT SAMPLE */
-if(!localStorage.getItem("data")){
-  save([
-    {id:1,user:"user1",projects:[
-      {pid:11,name:"site A",link:"https://google.com"}
-    ]},
-    {id:2,user:"user2",projects:[
-      {pid:21,name:"app B",link:"https://github.com"}
-    ]}
-  ]);
-}
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-/* ADD */
-function add(){
-  let d=get();
+/* LOGIN */
+function login(){
+  let e=email.value;
+  let p=pass.value;
 
-  let u=document.getElementById("u").value;
-  let p=document.getElementById("p").value;
-  let l=document.getElementById("l").value;
-
-  if(!l.startsWith("http")) l="https://"+l;
-
-  let user=d.find(x=>x.user===u);
-
-  if(!user){
-    d.push({
-      id:Date.now(),
-      user:u,
-      projects:[{pid:Date.now(),name:p,link:l}]
-    });
-  }else{
-    user.projects.push({pid:Date.now(),name:p,link:l});
-  }
-
-  save(d);
-  render();
-}
-
-/* DELETE USER */
-function delUser(id){
-  save(get().filter(x=>x.id!==id));
-  render();
-}
-
-/* DELETE PROJECT */
-function delProject(uid,pid){
-  let d=get();
-  let u=d.find(x=>x.id===uid);
-
-  u.projects=u.projects.filter(p=>p.pid!==pid);
-
-  save(d);
-  render();
-}
-
-/* EDIT PROJECT */
-function editProject(uid,pid){
-  let d=get();
-  let u=d.find(x=>x.id===uid);
-  let p=u.projects.find(x=>x.pid===pid);
-
-  let n=prompt("Project name",p.name);
-  let l=prompt("Link",p.link);
-
-  if(n) p.name=n;
-  if(l) p.link=l;
-
-  save(d);
-  render();
-}
-
-/* RENDER */
-function render(){
-  let d=get();
-  let box=document.getElementById("table");
-  box.innerHTML="";
-
-  d.forEach(u=>{
-
-    let projects=u.projects.map(p=>`
-      <div class="projects">
-        📁 ${p.name}<br>
-        <span class="small">${p.link}</span><br>
-        <button class="edit" onclick="editProject(${u.id},${p.pid})">Edit</button>
-        <button class="del" onclick="delProject(${u.id},${p.pid})">Delete</button>
-      </div>
-    `).join("");
-
-    box.innerHTML+=`
-      <tr>
-        <td class="userRow">${u.user}</td>
-        <td>${projects}</td>
-        <td>
-          <button class="del" onclick="delUser(${u.id})">Delete User</button>
-        </td>
-      </tr>
-    `;
-  });
+  auth.signInWithEmailAndPassword(e,p)
+  .then(()=>{
+    loginBox.style.display="none";
+    dash.style.display="block";
+    loadData();
+  })
+  .catch(err=>alert(err.message));
 }
 
 /* LOGOUT */
 function logout(){
-  localStorage.clear();
-  location.href="index.html";
+  auth.signOut();
+  location.reload();
 }
 
-render();
+/* ADD PROJECT */
+function addProject(){
+  db.collection("projects").add({
+    user:user.value,
+    name:name.value,
+    link:link.value.startsWith("http")?link.value:"https://"+link.value,
+    created:Date.now()
+  });
+}
+
+/* DELETE */
+function del(id){
+  db.collection("projects").doc(id).delete();
+}
+
+/* EDIT */
+function edit(id,oldName){
+  let n=prompt("New name",oldName);
+  if(n){
+    db.collection("projects").doc(id).update({
+      name:n
+    });
+  }
+}
+
+/* REAL TIME LOAD */
+function loadData(){
+
+db.collection("projects").onSnapshot(snap=>{
+
+  let box=document.getElementById("list");
+  box.innerHTML="";
+
+  let users={};
+
+  snap.forEach(doc=>{
+    let d=doc.data();
+    let id=doc.id;
+
+    if(!users[d.user]) users[d.user]=[];
+    users[d.user].push({...d,id});
+  });
+
+  for(let u in users){
+
+    let rows=users[u].map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        <td><a href="${p.link}" target="_blank">${p.link}</a></td>
+        <td>
+          <button class="edit" onclick="edit('${p.id}','${p.name}')">Edit</button>
+          <button class="danger" onclick="del('${p.id}')">Del</button>
+        </td>
+      </tr>
+    `).join("");
+
+    box.innerHTML+=`
+      <div class="card">
+        <h3>👤 ${u}</h3>
+
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
+    `;
+  }
+
+});
+
+}
 
 </script>
 
