@@ -45,33 +45,6 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-/* ADMIN MENU */
-#adminMenu{
-  display:none;
-  position:absolute;
-  right:0;
-  top:40px;
-  background:#111827;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-}
-
-#adminMenu button{
-  width:120px;
-  margin:5px 0;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:white;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-}
-
-#adminMenu button:last-child{
-  background:#ef4444;
-}
-
 /* SEARCH */
 #search{
   padding:8px;
@@ -175,19 +148,16 @@ button:hover{
   transform:scale(1.05);
 }
 
-/* OPEN BUTTON */
-.openBtn{
-  padding:6px 12px;
-  border-radius:8px;
-  border:none;
-  background:#38bdf8;
-  color:white;
-  cursor:pointer;
-}
-
 /* ACTION */
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
+
+/* LINK STYLE */
+.linkText{
+  color:#38bdf8;
+  text-decoration:underline;
+  word-break:break-all;
+}
 
 </style>
 </head>
@@ -201,22 +171,8 @@ button:hover{
 
 <!-- TOPBAR -->
 <div class="topbar">
-
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
-
-  <div style="position:relative;">
-    👤 <span id="username"></span>
-
-    <button onclick="toggleMenu()" style="margin-left:10px;">
-      ⚙️ Admin
-    </button>
-
-    <div id="adminMenu">
-      <button onclick="settings()">Settings</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
-
+  👤 <span id="username"></span>
 </div>
 
 <!-- MAIN -->
@@ -256,29 +212,6 @@ function getData(){
 
 function save(d){
   localStorage.setItem("projects", JSON.stringify(d));
-}
-
-/* MENU */
-function toggleMenu(){
-  let m = document.getElementById("adminMenu");
-  m.style.display = (m.style.display==="block")?"none":"block";
-}
-
-/* SETTINGS */
-function settings(){
-  let pass = prompt("Enter new admin password:");
-  if(pass){
-    localStorage.setItem("admin_pass", pass);
-    alert("Password updated!");
-  }
-  document.getElementById("adminMenu").style.display="none";
-}
-
-/* LOGOUT */
-function logout(){
-  localStorage.removeItem("auth");
-  localStorage.removeItem("user");
-  location.href="index.html";
 }
 
 /* ADD */
@@ -328,12 +261,6 @@ function editProject(id){
   render();
 }
 
-/* 🔥 SHOW ORIGINAL LINK BEFORE OPEN */
-function openLink(link){
-  alert("🔗 Original Link:\n\n" + link);
-  window.open(link, "_blank");
-}
-
 /* STATS */
 function updateStats(d){
   let users = new Set(d.map(p=>p.user));
@@ -369,10 +296,11 @@ function render(){
       <tr>
         <td>${p.name}</td>
 
+        <!-- LINK DIRECT CLICK -->
         <td>
-          <button class="openBtn" onclick="openLink('${p.link}')">
-            OPEN
-          </button>
+          <a class="linkText" href="${p.link}" target="_blank">
+            ${p.link}
+          </a>
         </td>
 
         <td>
