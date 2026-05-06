@@ -102,12 +102,6 @@ body{
   border-radius:15px;
   text-align:center;
   border:1px solid rgba(56,189,248,0.2);
-  transition:0.3s;
-}
-
-.stat:hover{
-  transform:translateY(-5px);
-  border-color:#38bdf8;
 }
 
 /* GRID */
@@ -125,12 +119,6 @@ body{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.08);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-6px);
-  border-color:#38bdf8;
 }
 
 /* TABLE */
@@ -168,11 +156,6 @@ button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
-  transition:0.2s;
-}
-
-button:hover{
-  transform:scale(1.05);
 }
 
 /* OPEN BUTTON */
@@ -189,15 +172,6 @@ button:hover{
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
 
-/* ANIMATION */
-.card, .stat{
-  animation: fadeIn 0.4s ease-in;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
-}
 </style>
 </head>
 
@@ -210,7 +184,6 @@ button:hover{
 
 <!-- TOPBAR -->
 <div class="topbar">
-
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
 
   <div style="position:relative;">
@@ -220,13 +193,11 @@ button:hover{
       ⚙️ Admin
     </button>
 
-    <!-- ADMIN MENU -->
     <div id="adminMenu">
       <button onclick="settings()">Settings</button>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
-
 </div>
 
 <!-- MAIN -->
@@ -274,7 +245,7 @@ function toggleMenu(){
   m.style.display = (m.style.display==="block")?"none":"block";
 }
 
-/* SETTINGS (CHANGE PASSWORD) */
+/* SETTINGS */
 function settings(){
   let pass = prompt("Enter new admin password:");
   if(pass){
@@ -338,6 +309,12 @@ function editProject(id){
   render();
 }
 
+/* 🔥 NEW FEATURE: SHOW ORIGINAL LINK */
+function openLink(link){
+  alert("🔗 Original Link:\n\n" + link);
+  window.open(link, "_blank");
+}
+
 /* STATS */
 function updateStats(d){
   let users = new Set(d.map(p=>p.user));
@@ -372,7 +349,13 @@ function render(){
     let rows = grouped[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-        <td><a href="${p.link}" target="_blank"><button class="openBtn">OPEN</button></a></td>
+
+        <td>
+          <button class="openBtn" onclick="openLink('${p.link}')">
+            OPEN
+          </button>
+        </td>
+
         <td>
           <span class="delete" onclick="delProject(${p.id})">del</span>
           <span class="edit" onclick="editProject(${p.id})">edit</span>
