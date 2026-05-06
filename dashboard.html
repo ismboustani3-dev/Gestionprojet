@@ -45,6 +45,34 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
+/* ADMIN MENU */
+#adminMenu{
+  display:none;
+  position:absolute;
+  right:0;
+  top:40px;
+  background:#111827;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
+  width:160px;
+}
+
+#adminMenu button{
+  width:100%;
+  margin:5px 0;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+}
+
+#adminMenu button:last-child{
+  background:#ef4444;
+}
+
 /* SEARCH */
 #search{
   padding:8px;
@@ -75,12 +103,6 @@ body{
   border-radius:15px;
   text-align:center;
   border:1px solid rgba(56,189,248,0.2);
-  transition:0.3s;
-}
-
-.stat:hover{
-  transform:translateY(-5px);
-  border-color:#38bdf8;
 }
 
 /* GRID */
@@ -98,12 +120,6 @@ body{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.08);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-6px);
-  border-color:#38bdf8;
 }
 
 /* TABLE */
@@ -141,19 +157,14 @@ button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
-  transition:0.2s;
-}
-
-button:hover{
-  transform:scale(1.05);
 }
 
 /* ACTION */
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
 
-/* LINK STYLE */
-.linkText{
+/* LINK */
+.link{
   color:#38bdf8;
   text-decoration:underline;
   word-break:break-all;
@@ -171,8 +182,22 @@ button:hover{
 
 <!-- TOPBAR -->
 <div class="topbar">
+
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
-  👤 <span id="username"></span>
+
+  <div style="position:relative;">
+    👤 <span id="username"></span>
+
+    <button onclick="toggleMenu()" style="margin-left:10px;">
+      ⚙️ Admin
+    </button>
+
+    <div id="adminMenu">
+      <button onclick="openSettings()">Settings</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- MAIN -->
@@ -197,6 +222,11 @@ button:hover{
 
 <script>
 
+/* INIT PASSWORD */
+if(!localStorage.getItem("admin_pass")){
+  localStorage.setItem("admin_pass","1234");
+}
+
 /* AUTH */
 if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
@@ -204,6 +234,37 @@ if(localStorage.getItem("auth") !== "true"){
 
 document.getElementById("username").innerText =
   localStorage.getItem("user");
+
+/* MENU */
+function toggleMenu(){
+  let m = document.getElementById("adminMenu");
+  m.style.display = (m.style.display==="block")?"none":"block";
+}
+
+/* SETTINGS */
+function openSettings(){
+  let old = prompt("Enter current password:");
+
+  if(old !== localStorage.getItem("admin_pass")){
+    alert("Wrong password!");
+    return;
+  }
+
+  let newPass = prompt("Enter new password:");
+  if(newPass){
+    localStorage.setItem("admin_pass", newPass);
+    alert("Password updated!");
+  }
+
+  document.getElementById("adminMenu").style.display="none";
+}
+
+/* LOGOUT */
+function logout(){
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+  location.href="index.html";
+}
 
 /* DATA */
 function getData(){
@@ -296,9 +357,8 @@ function render(){
       <tr>
         <td>${p.name}</td>
 
-        <!-- LINK DIRECT CLICK -->
         <td>
-          <a class="linkText" href="${p.link}" target="_blank">
+          <a class="link" href="${p.link}" target="_blank">
             ${p.link}
           </a>
         </td>
