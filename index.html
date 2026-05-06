@@ -56,14 +56,21 @@ button{
 </div>
 
 <script>
+
+/* DEFAULT PASSWORD (first time) */
+if(!localStorage.getItem("admin_pass")){
+  localStorage.setItem("admin_pass","1234");
+}
+
 function login(){
   let user = document.getElementById("user").value;
   let pass = document.getElementById("pass").value;
 
-  if(user === "admin" && pass === "1234"){
+  let savedPass = localStorage.getItem("admin_pass");
+
+  if(user === "admin" && pass === savedPass){
     localStorage.setItem("auth","true");
     localStorage.setItem("user",user);
-
     window.location.href = "dashboard.html";
   } else {
     alert("❌ Wrong username or password");
