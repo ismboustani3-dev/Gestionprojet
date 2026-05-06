@@ -25,9 +25,7 @@ body{
   border-right:1px solid rgba(255,255,255,0.08);
 }
 
-.sidebar h2{
-  color:#38bdf8;
-}
+.sidebar h2{ color:#38bdf8; }
 
 /* TOPBAR */
 .topbar{
@@ -42,7 +40,6 @@ body{
   justify-content:space-between;
   align-items:center;
   padding:0 20px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 /* ADMIN MENU */
@@ -73,16 +70,6 @@ body{
   background:#ef4444;
 }
 
-/* SEARCH */
-#search{
-  padding:8px;
-  border-radius:8px;
-  border:none;
-  background:#111827;
-  color:white;
-  width:200px;
-}
-
 /* MAIN */
 .main{
   margin-left:240px;
@@ -90,57 +77,34 @@ body{
   padding:20px;
 }
 
-/* STATS */
-.stats{
-  display:flex;
-  gap:15px;
-}
-
-.stat{
-  flex:1;
-  background: rgba(17,24,39,0.6);
-  padding:18px;
-  border-radius:15px;
-  text-align:center;
-  border:1px solid rgba(56,189,248,0.2);
-}
-
-/* GRID */
-#list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
-  gap:15px;
-  margin-top:15px;
-}
-
-/* CARD */
+/* CARDS */
 .card{
-  background: rgba(17,24,39,0.6);
-  backdrop-filter: blur(10px);
+  background:#111827;
   padding:15px;
-  border-radius:15px;
-  border:1px solid rgba(255,255,255,0.08);
+  margin:10px 0;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
 }
 
 /* TABLE */
 table{
   width:100%;
-  margin-top:10px;
   border-collapse:collapse;
+  margin-top:10px;
 }
 
 th{
   text-align:left;
-  padding:8px;
   color:#38bdf8;
+  padding:8px;
 }
 
 td{
   padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-/* INPUTS */
+/* INPUT */
 input,button{
   padding:10px;
   margin:5px;
@@ -159,11 +123,8 @@ button{
   cursor:pointer;
 }
 
-/* ACTION */
-.delete{ color:#ef4444; cursor:pointer; }
-.edit{ color:#facc15; cursor:pointer; margin-left:10px; }
+.danger{ background:#ef4444; }
 
-/* LINK */
 .link{
   color:#38bdf8;
   text-decoration:underline;
@@ -183,14 +144,12 @@ button{
 <!-- TOPBAR -->
 <div class="topbar">
 
-  <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
+  <input id="search" placeholder="🔍 Search..." oninput="render()">
 
   <div style="position:relative;">
     👤 <span id="username"></span>
 
-    <button onclick="toggleMenu()" style="margin-left:10px;">
-      ⚙️ Admin
-    </button>
+    <button onclick="toggleMenu()">⚙️ Admin</button>
 
     <div id="adminMenu">
       <button onclick="openSettings()">Settings</button>
@@ -203,11 +162,7 @@ button{
 <!-- MAIN -->
 <div class="main">
 
-  <div class="stats">
-    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
-    <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
-  </div>
-
+  <!-- PROJECTS -->
   <div class="card">
     <h3>➕ Add Project</h3>
     <input id="user" placeholder="Username">
@@ -218,16 +173,21 @@ button{
 
   <div id="list"></div>
 
+  <!-- USERS ADMIN -->
+  <div class="card">
+    <h3>👑 Users Management</h3>
+    <div id="usersBox"></div>
+  </div>
+
 </div>
 
 <script>
 
-/* INIT PASSWORD */
+/* INIT */
 if(!localStorage.getItem("admin_pass")){
   localStorage.setItem("admin_pass","1234");
 }
 
-/* AUTH */
 if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
@@ -244,15 +204,14 @@ function toggleMenu(){
 /* SETTINGS */
 function openSettings(){
   let old = prompt("Enter current password:");
-
   if(old !== localStorage.getItem("admin_pass")){
     alert("Wrong password!");
     return;
   }
 
-  let newPass = prompt("Enter new password:");
-  if(newPass){
-    localStorage.setItem("admin_pass", newPass);
+  let np = prompt("New password:");
+  if(np){
+    localStorage.setItem("admin_pass", np);
     alert("Password updated!");
   }
 
@@ -262,11 +221,10 @@ function openSettings(){
 /* LOGOUT */
 function logout(){
   localStorage.removeItem("auth");
-  localStorage.removeItem("user");
   location.href="index.html";
 }
 
-/* DATA */
+/* PROJECTS DATA */
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
 }
@@ -275,7 +233,16 @@ function save(d){
   localStorage.setItem("projects", JSON.stringify(d));
 }
 
-/* ADD */
+/* USERS DATA */
+function getUsers(){
+  return JSON.parse(localStorage.getItem("users")) || [];
+}
+
+function saveUsers(d){
+  localStorage.setItem("users", JSON.stringify(d));
+}
+
+/* ADD PROJECT */
 function add(){
   let d = getData();
 
@@ -283,34 +250,29 @@ function add(){
   let name = document.getElementById("name").value;
   let link = document.getElementById("link").value;
 
-  if(!user || !name || !link){
-    alert("Fill all");
-    return;
-  }
+  if(!user || !name || !link) return alert("Fill all");
 
-  if(!link.startsWith("http")){
-    link = "https://" + link;
-  }
+  if(!link.startsWith("http")) link="https://"+link;
 
   d.push({id:Date.now(), user, name, link});
   save(d);
   render();
 }
 
-/* DELETE */
+/* DELETE PROJECT */
 function delProject(id){
   let d = getData().filter(x=>x.id!==id);
   save(d);
   render();
 }
 
-/* EDIT */
+/* EDIT PROJECT */
 function editProject(id){
   let d = getData();
   let p = d.find(x=>x.id===id);
 
-  let n = prompt("Edit name", p.name);
-  let l = prompt("Edit link", p.link);
+  let n = prompt("Name", p.name);
+  let l = prompt("Link", p.link);
 
   if(n) p.name=n;
   if(l){
@@ -322,14 +284,28 @@ function editProject(id){
   render();
 }
 
-/* STATS */
-function updateStats(d){
-  let users = new Set(d.map(p=>p.user));
-  document.getElementById("totalUsers").innerText = users.size;
-  document.getElementById("totalProjects").innerText = d.length;
+/* DELETE USER */
+function deleteUser(u){
+  let d = getUsers().filter(x=>x.username!==u);
+  saveUsers(d);
+  renderUsers();
 }
 
-/* RENDER */
+/* EDIT USER PASSWORD */
+function editUser(u){
+  let d = getUsers();
+  let user = d.find(x=>x.username===u);
+
+  let np = prompt("New password", user.password);
+  if(np){
+    user.password=np;
+    saveUsers(d);
+  }
+
+  renderUsers();
+}
+
+/* RENDER PROJECTS */
 function render(){
   let d = getData();
   let q = document.getElementById("search").value?.toLowerCase() || "";
@@ -338,8 +314,6 @@ function render(){
     p.user.toLowerCase().includes(q) ||
     p.name.toLowerCase().includes(q)
   );
-
-  updateStats(filtered);
 
   let box = document.getElementById("list");
   box.innerHTML = "";
@@ -356,16 +330,10 @@ function render(){
     let rows = grouped[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-
+        <td><a class="link" href="${p.link}" target="_blank">${p.link}</a></td>
         <td>
-          <a class="link" href="${p.link}" target="_blank">
-            ${p.link}
-          </a>
-        </td>
-
-        <td>
-          <span class="delete" onclick="delProject(${p.id})">del</span>
-          <span class="edit" onclick="editProject(${p.id})">edit</span>
+          <span onclick="delProject(${p.id})">❌</span>
+          <span onclick="editProject(${p.id})">✏️</span>
         </td>
       </tr>
     `).join("");
@@ -374,16 +342,36 @@ function render(){
       <div class="card">
         <h3>👤 ${u}</h3>
         <table>
-          <tr>
-            <th>Project</th>
-            <th>Link</th>
-            <th>Action</th>
-          </tr>
+          <tr><th>Project</th><th>Link</th><th>Action</th></tr>
           ${rows}
         </table>
       </div>
     `;
   }
+
+  renderUsers();
+}
+
+/* RENDER USERS */
+function renderUsers(){
+  let d = getUsers();
+  let box = document.getElementById("usersBox");
+
+  if(!box) return;
+
+  box.innerHTML="";
+
+  d.forEach(u=>{
+    box.innerHTML += `
+      <div class="card">
+        <h4>👤 ${u.username}</h4>
+        <p>🔑 ${u.password}</p>
+
+        <button onclick="editUser('${u.username}')">Edit Password</button>
+        <button class="danger" onclick="deleteUser('${u.username}')">Delete User</button>
+      </div>
+    `;
+  });
 }
 
 render();
