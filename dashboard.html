@@ -102,6 +102,12 @@ body{
   border-radius:15px;
   text-align:center;
   border:1px solid rgba(56,189,248,0.2);
+  transition:0.3s;
+}
+
+.stat:hover{
+  transform:translateY(-5px);
+  border-color:#38bdf8;
 }
 
 /* GRID */
@@ -119,6 +125,12 @@ body{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.08);
+  transition:0.3s;
+}
+
+.card:hover{
+  transform:translateY(-6px);
+  border-color:#38bdf8;
 }
 
 /* TABLE */
@@ -156,6 +168,11 @@ button{
   background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:scale(1.05);
 }
 
 /* OPEN BUTTON */
@@ -184,6 +201,7 @@ button{
 
 <!-- TOPBAR -->
 <div class="topbar">
+
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
 
   <div style="position:relative;">
@@ -198,6 +216,7 @@ button{
       <button onclick="logout()">Logout</button>
     </div>
   </div>
+
 </div>
 
 <!-- MAIN -->
@@ -309,7 +328,7 @@ function editProject(id){
   render();
 }
 
-/* 🔥 NEW FEATURE: SHOW ORIGINAL LINK */
+/* 🔥 SHOW ORIGINAL LINK BEFORE OPEN */
 function openLink(link){
   alert("🔗 Original Link:\n\n" + link);
   window.open(link, "_blank");
