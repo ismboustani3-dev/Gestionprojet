@@ -108,33 +108,31 @@ th,td{
 .delete{color:#ef4444;cursor:pointer;margin-right:10px;}
 .edit{color:#facc15;cursor:pointer;}
 
-/* MENU */
-.menuBox{
-  position:relative;
+/* USER COLUMN LAYOUT */
+.usersGrid{
+  display:flex;
+  gap:20px;
+  overflow-x:auto;
+  padding-bottom:20px;
 }
 
-.dropdown{
-  display:none;
-  position:absolute;
-  right:0;
-  top:40px;
+.userColumn{
+  min-width:260px;
   background:#111827;
-  border-radius:10px;
-  overflow:hidden;
-  width:160px;
+  padding:15px;
+  border-radius:15px;
 }
 
-.dropdown button{
-  width:100%;
-  background:#111827;
-  border:none;
+.userColumn h3{
+  color:#38bdf8;
+  margin-bottom:10px;
+}
+
+.projectItem{
+  background:#0b1220;
   padding:10px;
-  color:white;
-  cursor:pointer;
-}
-
-.dropdown button:hover{
-  background:#1f2937;
+  margin:8px 0;
+  border-radius:10px;
 }
 
 </style>
@@ -149,17 +147,8 @@ th,td{
 </div>
 
 <div class="topbar">
-  <input id="search" placeholder="Search..." oninput="render()">
-
-  <div class="menuBox">
-    👤 <span id="username"></span>
-    <button onclick="toggleMenu()">⚙</button>
-
-    <div id="menu" class="dropdown">
-      <button onclick="changePassword()">Change Password</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
+  <input id="search" placeholder="Search..." oninput="renderProjects()">
+  <div>👤 <span id="username"></span></div>
 </div>
 
 <div class="main">
@@ -187,7 +176,7 @@ th,td{
       <button onclick="addProject()">Add</button>
     </div>
 
-    <div id="list"></div>
+    <div id="list" class="usersGrid"></div>
 
   </div>
 
@@ -196,11 +185,7 @@ th,td{
 <script>
 
 if(!localStorage.getItem("projects")) localStorage.setItem("projects","[]");
-if(!localStorage.getItem("users")) localStorage.setItem("users",JSON.stringify(["admin"]));
-if(!localStorage.getItem("pass")) localStorage.setItem("pass","1234");
-
-let authUser="admin";
-document.getElementById("username").innerText=authUser;
+if(!localStorage.getItem("users")) localStorage.setItem("users",JSON.stringify(["user1","user2"]));
 
 function getP(){return JSON.parse(localStorage.getItem("projects"));}
 function saveP(d){localStorage.setItem("projects",JSON.stringify(d));}
@@ -208,29 +193,14 @@ function saveP(d){localStorage.setItem("projects",JSON.stringify(d));}
 function getU(){return JSON.parse(localStorage.getItem("users"));}
 function saveU(d){localStorage.setItem("users",JSON.stringify(d));}
 
+let authUser="admin";
+document.getElementById("username").innerText=authUser;
+
 function show(id){
   document.querySelectorAll(".section").forEach(e=>e.style.display="none");
   document.getElementById(id).style.display="block";
 }
 show('dashboard');
-
-/* MENU */
-function toggleMenu(){
-  let m=document.getElementById("menu");
-  m.style.display=m.style.display==="block"?"none":"block";
-}
-
-function changePassword(){
-  let old=prompt("Old password");
-  if(old!==localStorage.getItem("pass")) return alert("Wrong");
-  let n=prompt("New password");
-  if(n) localStorage.setItem("pass",n);
-}
-
-function logout(){
-  localStorage.removeItem("auth");
-  location.href="index.html";
-}
 
 /* USERS */
 function addUser(){
@@ -256,7 +226,7 @@ function renderUsers(){
   stats();
 }
 
-/* PROJECTS PER USER */
+/* PROJECTS GRID LIKE IMAGE */
 function addProject(){
   let d=getP();
   let user=document.getElementById("user").value;
@@ -278,6 +248,7 @@ function delProject(id){
 }
 
 function renderProjects(){
+
   let d=getP();
   let q=document.getElementById("search").value?.toLowerCase()||"";
 
@@ -285,27 +256,33 @@ function renderProjects(){
     p.user.toLowerCase().includes(q)||p.name.toLowerCase().includes(q)
   );
 
+  let users=getU();
+
   let box=document.getElementById("list");
   box.innerHTML="";
 
-  let groups={};
+  users.forEach(u=>{
 
-  filtered.forEach(p=>{
-    if(!groups[p.user]) groups[p.user]=[];
-    groups[p.user].push(p);
-  });
+    let userProjects=filtered.filter(p=>p.user===u);
 
-  Object.keys(groups).forEach(u=>{
+    let html="";
 
-    let rows=groups[u].map(p=>`
-      <tr>
-        <td>${p.name}</td>
-        <td><a href='${p.link}' target='_blank'>open</a></td>
-        <td><span class='delete' onclick='delProject(${p.id})'>del</span></td>
-      </tr>
-    `).join("");
+    userProjects.forEach(p=>{
+      html+=`
+        <div class='projectItem'>
+          <b>${p.name}</b><br>
+          <a href='${p.link}' target='_blank'>open</a><br>
+          <span class='delete' onclick='delProject(${p.id})'>delete</span>
+        </div>
+      `;
+    });
 
-    box.innerHTML+=`<div class='card'><h3>User: ${u}</h3><table>${rows}</table></div>`;
+    box.innerHTML+=`
+      <div class='userColumn'>
+        <h3>${u}</h3>
+        ${html || '<small>No projects</small>'}
+      </div>
+    `;
 
   });
 
@@ -315,7 +292,6 @@ function renderProjects(){
 function stats(){
   let d=getP();
   let u=new Set(d.map(x=>x.user));
-
   document.getElementById("uCount").innerText=u.size;
   document.getElementById("pCount").innerText=d.length;
 }
