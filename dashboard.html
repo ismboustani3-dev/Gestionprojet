@@ -2,92 +2,31 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Admin Panel</title>
+<title>Flat Admin Dashboard</title>
 
 <style>
 body{
   margin:0;
   font-family:'Segoe UI', sans-serif;
-  background: radial-gradient(circle,#0a0f1c,#050814);
+  background:#0a0f1c;
   color:white;
 }
 
-/* SIDEBAR */
-.sidebar{
-  position:fixed;
-  left:0;
-  top:0;
-  width:240px;
-  height:100vh;
-  background: rgba(17,24,39,0.6);
-  backdrop-filter: blur(15px);
-  padding:20px;
-}
-
-.sidebar h2{
-  color:#38bdf8;
-}
-
-/* TOPBAR */
+/* TOP */
 .topbar{
-  position:fixed;
-  left:240px;
-  top:0;
-  right:0;
-  height:60px;
-  background: rgba(17,24,39,0.5);
-  backdrop-filter: blur(15px);
+  background:#111827;
+  padding:15px;
   display:flex;
-  justify-content:flex-end;
+  justify-content:space-between;
   align-items:center;
-  padding:0 20px;
-}
-
-/* ADMIN MENU */
-.adminMenu{
-  position:relative;
-  cursor:pointer;
-  user-select:none;
-}
-
-.dropdown{
-  position:absolute;
-  right:0;
-  top:45px;
-  background:#1f2937;
-  border-radius:10px;
-  overflow:hidden;
-  display:none;
-  min-width:180px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.4);
-}
-
-.dropdown div{
-  padding:12px;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.dropdown div:hover{
-  background:#374151;
 }
 
 /* MAIN */
 .main{
-  margin-left:240px;
-  margin-top:60px;
   padding:20px;
 }
 
-/* CARD */
-.card{
-  background: rgba(17,24,39,0.6);
-  padding:15px;
-  border-radius:12px;
-  margin-top:15px;
-}
-
-/* INPUT */
+/* INPUTS */
 input,button{
   padding:10px;
   margin:5px;
@@ -106,133 +45,74 @@ button{
   cursor:pointer;
 }
 
-/* USER BOX */
-.userBox{
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
   background:#111827;
-  padding:10px;
-  margin:5px 0;
   border-radius:10px;
-  display:flex;
-  justify-content:space-between;
+  overflow:hidden;
 }
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+  text-align:left;
+}
+
+th{
+  color:#38bdf8;
+}
+
 .delete{ color:red; cursor:pointer; }
+.edit{ color:orange; cursor:pointer; margin-left:10px; }
+
+.openBtn{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:#38bdf8;
+  color:white;
+  cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>⚡ Admin Panel</h2>
-</div>
-
-<!-- TOPBAR -->
 <div class="topbar">
-
-  <div class="adminMenu" onclick="toggleMenu()">
-    👤 Admin ▼
-
-    <div class="dropdown" id="menu">
-      <div onclick="openSettings()">⚙️ Settings</div>
-      <div onclick="logout()">🚪 Logout</div>
-    </div>
-  </div>
-
+  <h3>⚡ Flat Admin Dashboard</h3>
+  <div>👤 Admin</div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
-  <!-- STATS -->
-  <div class="card">
-    <h3>📊 Dashboard</h3>
-    👤 Users: <span id="totalUsers">0</span><br>
-    📁 Projects: <span id="totalProjects">0</span>
-  </div>
-
-  <!-- CREATE USER -->
-  <div class="card" id="settings" style="display:none;">
-    <h3>⚙️ Admin Settings</h3>
-
-    <h4>🔐 Change Password</h4>
-    <input id="oldPass" type="password" placeholder="Old password">
-    <input id="newPass" type="password" placeholder="New password">
-    <button onclick="changePassword()">Update Password</button>
-
-    <hr>
-
-    <h4>➕ Create User</h4>
-    <input id="newUser" placeholder="Username">
-    <input id="newUserPass" type="password" placeholder="Password">
-    <button onclick="createUser()">Create User</button>
-  </div>
-
-  <!-- ADD PROJECT -->
-  <div class="card">
-    <h3>➕ Add Project</h3>
+  <!-- ADD -->
+  <div>
     <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- USERS -->
-  <div id="list"></div>
+  <!-- TABLE -->
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Project</th>
+        <th>Link</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody id="list"></tbody>
+  </table>
 
 </div>
 
 <script>
-
-/* AUTH */
-if(localStorage.getItem("auth") !== "true"){
-  location.href="index.html";
-}
-
-/* MENU */
-function toggleMenu(){
-  let m = document.getElementById("menu");
-  m.style.display = m.style.display === "block" ? "none" : "block";
-}
-
-/* SETTINGS */
-function openSettings(){
-  let s = document.getElementById("settings");
-  s.style.display = s.style.display === "block" ? "none" : "block";
-}
-
-/* PASSWORD */
-function changePassword(){
-  let oldP = document.getElementById("oldPass").value;
-  let newP = document.getElementById("newPass").value;
-
-  let saved = localStorage.getItem("admin_pass");
-
-  if(oldP !== saved){
-    alert("Wrong password");
-    return;
-  }
-
-  localStorage.setItem("admin_pass", newP);
-  alert("Password updated!");
-}
-
-/* CREATE USER */
-function createUser(){
-  let u = document.getElementById("newUser").value;
-  let p = document.getElementById("newUserPass").value;
-
-  if(!u || !p){
-    alert("Fill all");
-    return;
-  }
-
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  users.push({user:u, pass:p});
-
-  localStorage.setItem("users", JSON.stringify(users));
-
-  alert("User created!");
-}
 
 /* DATA */
 function getData(){
@@ -243,7 +123,7 @@ function save(d){
   localStorage.setItem("projects", JSON.stringify(d));
 }
 
-/* ADD PROJECT */
+/* ADD */
 function add(){
   let d = getData();
 
@@ -260,9 +140,14 @@ function add(){
     link = "https://" + link;
   }
 
-  d.push({id:Date.now(), user, name, link});
-  save(d);
+  d.push({
+    id:Date.now(),
+    user,
+    name,
+    link
+  });
 
+  save(d);
   render();
 }
 
@@ -273,55 +158,50 @@ function del(id){
   render();
 }
 
-/* STATS */
-function updateStats(d){
-  let users = new Set(d.map(p=>p.user));
+/* EDIT */
+function edit(id){
+  let d = getData();
+  let p = d.find(x=>x.id===id);
 
-  document.getElementById("totalUsers").innerText = users.size;
-  document.getElementById("totalProjects").innerText = d.length;
+  let n = prompt("Edit project", p.name);
+  if(n) p.name = n;
+
+  let l = prompt("Edit link", p.link);
+  if(l){
+    if(!l.startsWith("http")) l="https://"+l;
+    p.link = l;
+  }
+
+  save(d);
+  render();
 }
 
-/* RENDER */
+/* RENDER FLAT TABLE */
 function render(){
   let d = getData();
-  updateStats(d);
 
-  let box = document.getElementById("list");
-  box.innerHTML = "";
+  let html = d.map(p=>`
+    <tr>
+      <td>${p.user}</td>
+      <td>${p.name}</td>
 
-  let grouped = {};
+      <td>
+        <a href="${p.link}" target="_blank">
+          <button class="openBtn">OPEN</button>
+        </a>
+      </td>
 
-  d.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user]=[];
-    grouped[p.user].push(p);
-  });
+      <td>
+        <span class="delete" onclick="del(${p.id})">delete</span>
+        <span class="edit" onclick="edit(${p.id})">edit</span>
+      </td>
+    </tr>
+  `).join("");
 
-  for(let u in grouped){
-
-    let rows = grouped[u].map(p=>`
-      <div class="userBox">
-        <span>${p.name}</span>
-        <a href="${p.link}" target="_blank">OPEN</a>
-        <span class="delete" onclick="del(${p.id})">X</span>
-      </div>
-    `).join("");
-
-    box.innerHTML += `
-      <div class="card">
-        <h3>👤 ${u}</h3>
-        ${rows}
-      </div>
-    `;
-  }
+  document.getElementById("list").innerHTML = html;
 }
 
 render();
-
-/* LOGOUT */
-function logout(){
-  localStorage.clear();
-  location.href="index.html";
-}
 
 </script>
 
