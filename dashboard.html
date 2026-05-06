@@ -27,7 +27,6 @@ body{
   position:fixed;
   left:0;
   top:0;
-  border-right:1px solid rgba(255,255,255,0.05);
 }
 
 .sidebar h2{
@@ -46,7 +45,6 @@ body{
   align-items:center;
   justify-content:space-between;
   padding:0 20px;
-  border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
 /* MAIN */
@@ -67,21 +65,16 @@ body{
   width:220px;
 }
 
-/* USER MENU */
-.userBox{
-  position:relative;
-}
-
+/* ADMIN MENU */
 #adminMenu{
   display:none;
   position:absolute;
   right:0;
   top:45px;
   background:#111827;
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:12px;
-  width:170px;
+  border-radius:10px;
   overflow:hidden;
+  width:150px;
 }
 
 #adminMenu button{
@@ -91,7 +84,6 @@ body{
   cursor:pointer;
   background:#111827;
   color:white;
-  text-align:left;
 }
 
 #adminMenu button:hover{
@@ -110,7 +102,6 @@ body{
   background:#111827;
   padding:20px;
   border-radius:15px;
-  border:1px solid rgba(255,255,255,0.05);
 }
 
 /* CARD */
@@ -119,7 +110,6 @@ body{
   padding:20px;
   border-radius:15px;
   margin-bottom:20px;
-  border:1px solid rgba(255,255,255,0.05);
 }
 
 /* INPUTS */
@@ -161,20 +151,13 @@ td{
   border-bottom:1px solid rgba(255,255,255,0.05);
 }
 
-/* LINK */
-a{
-  color:#38bdf8;
-  word-break:break-all;
-}
-
-/* ACTIONS */
+/* ACTION */
 .delete{color:#ef4444;cursor:pointer;margin-right:10px;}
 .edit{color:#facc15;cursor:pointer;}
 
-.copyBtn{
-  margin-top:5px;
-  font-size:12px;
-  padding:5px 8px;
+a{
+  color:#38bdf8;
+  word-break:break-all;
 }
 
 </style>
@@ -192,12 +175,12 @@ a{
 
   <input id="search" placeholder="Search..." oninput="render()">
 
-  <div class="userBox">
+  <div style="position:relative;">
     👤 <span id="username"></span>
     <button onclick="toggleMenu()">⚙</button>
 
     <div id="adminMenu">
-      <button onclick="openSettings()">Settings</button>
+      <button onclick="settings()">Settings</button>
       <button onclick="logout()">Logout</button>
     </div>
   </div>
@@ -207,14 +190,16 @@ a{
 <!-- MAIN -->
 <div class="main">
 
+  <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users <div id="totalUsers">0</div></div>
-    <div class="stat">📁 Projects <div id="totalProjects">0</div></div>
+    <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
   </div>
 
+  <!-- ADD -->
   <div class="card">
     <h3>Add Project</h3>
-    <input id="user" placeholder="Username">
+    <input id="user" placeholder="User name">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
@@ -236,17 +221,17 @@ if(localStorage.getItem("auth")!=="true"){
   location.href="index.html";
 }
 
-document.getElementById("username").innerText =
+document.getElementById("username").innerText=
 localStorage.getItem("user");
 
 /* MENU */
 function toggleMenu(){
   let m=document.getElementById("adminMenu");
-  m.style.display = m.style.display==="block"?"none":"block";
+  m.style.display=m.style.display==="block"?"none":"block";
 }
 
 /* SETTINGS */
-function openSettings(){
+function settings(){
   let old=prompt("Enter password");
   if(old!==localStorage.getItem("admin_pass")){
     alert("Wrong password");
@@ -279,15 +264,23 @@ function save(d){
 function add(){
   let d=getData();
 
-  let user=userInput.value;
-  let name=nameInput.value;
-  let link=linkInput.value;
+  let user=user.value;
+  let name=name.value;
+  let link=link.value;
 
   if(!user||!name||!link)return;
 
-  if(!link.startsWith("http"))link="https://"+link;
+  if(!link.startsWith("http")){
+    link="https://"+link;
+  }
 
-  d.push({id:Date.now(),user,name,link});
+  d.push({
+    id:Date.now(),
+    user,
+    name,
+    link
+  });
+
   save(d);
   render();
 }
@@ -323,41 +316,42 @@ function updateStats(d){
   document.getElementById("totalUsers").innerText=
   new Set(d.map(x=>x.user)).size;
 
-  document.getElementById("totalProjects").innerText=d.length;
+  document.getElementById("totalProjects").innerText=
+  d.length;
 }
 
-/* RENDER */
+/* RENDER (PARALLEL USERS SYSTEM) */
 function render(){
 
   let d=getData();
   let q=search.value?.toLowerCase()||"";
 
-  let f=d.filter(p=>
+  let filtered=d.filter(p=>
     p.user.toLowerCase().includes(q)||
     p.name.toLowerCase().includes(q)
   );
 
-  updateStats(f);
+  updateStats(filtered);
 
   let box=document.getElementById("list");
   box.innerHTML="";
 
-  let grouped={};
+  let users={};
 
-  f.forEach(p=>{
-    if(!grouped[p.user])grouped[p.user]=[];
-    grouped[p.user].push(p);
+  filtered.forEach(p=>{
+    if(!users[p.user]) users[p.user]=[];
+    users[p.user].push(p);
   });
 
-  for(let u in grouped){
+  Object.keys(users).forEach(u=>{
 
-    let rows=grouped[u].map(p=>`
+    let rows=users[u].map(p=>`
       <tr>
         <td>${p.name}</td>
         <td>
           <a href="${p.link}" target="_blank">${p.link}</a>
           <br>
-          <button class="copyBtn" onclick="copyLink('${p.link}')">copy</button>
+          <button onclick="copyLink('${p.link}')">copy</button>
         </td>
         <td>
           <span class="delete" onclick="delProject(${p.id})">del</span>
@@ -368,7 +362,7 @@ function render(){
 
     box.innerHTML+=`
       <div class="card">
-        <h3>${u}</h3>
+        <h3>👤 ${u}</h3>
         <table>
           <tr>
             <th>Project</th>
@@ -379,7 +373,7 @@ function render(){
         </table>
       </div>
     `;
-  }
+  });
 }
 
 render();
