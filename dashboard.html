@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Pro Dashboard - Dev Version</title>
+<title>Ultra Pro Admin Dashboard</title>
 
 <style>
 body{
   margin:0;
   font-family:'Segoe UI', sans-serif;
-  background:#0a0f1c;
+  background: radial-gradient(circle at top,#0a0f1c,#050814);
   color:white;
 }
 
@@ -19,8 +19,10 @@ body{
   top:0;
   width:240px;
   height:100vh;
-  background:#111827;
+  background: rgba(17,24,39,0.65);
+  backdrop-filter: blur(15px);
   padding:20px;
+  border-right:1px solid rgba(255,255,255,0.08);
 }
 
 .sidebar h2{ color:#38bdf8; }
@@ -28,11 +30,12 @@ body{
 /* TOPBAR */
 .topbar{
   position:fixed;
+  top:0;
   left:240px;
   right:0;
-  top:0;
   height:60px;
-  background:#111827;
+  background: rgba(17,24,39,0.5);
+  backdrop-filter: blur(15px);
   display:flex;
   justify-content:space-between;
   align-items:center;
@@ -44,9 +47,9 @@ body{
   padding:8px;
   border-radius:8px;
   border:none;
-  background:#1f2937;
+  background:#111827;
   color:white;
-  width:220px;
+  width:200px;
 }
 
 /* MAIN */
@@ -64,28 +67,36 @@ body{
 
 .stat{
   flex:1;
-  background:#111827;
-  padding:15px;
-  border-radius:12px;
+  background: rgba(17,24,39,0.6);
+  padding:18px;
+  border-radius:15px;
   text-align:center;
-  color:#38bdf8;
+  border:1px solid rgba(56,189,248,0.2);
 }
 
-/* INPUTS */
+/* CARD */
+.card{
+  background: rgba(17,24,39,0.6);
+  padding:15px;
+  border-radius:15px;
+  margin-top:15px;
+}
+
+/* INPUT */
 input,button{
   padding:10px;
   margin:5px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
 }
 
 input{
-  background:#1f2937;
+  background:#111827;
   color:white;
 }
 
 button{
-  background:#38bdf8;
+  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
   color:white;
   cursor:pointer;
 }
@@ -93,42 +104,34 @@ button{
 /* TABLE */
 table{
   width:100%;
-  margin-top:15px;
   border-collapse:collapse;
-  background:#111827;
-  border-radius:10px;
-  overflow:hidden;
-}
-
-th,td{
-  padding:10px;
-  border-bottom:1px solid rgba(255,255,255,0.08);
+  margin-top:10px;
 }
 
 th{
-  color:#38bdf8;
   text-align:left;
+  padding:8px;
+  color:#38bdf8;
 }
 
-/* BUTTONS */
+td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+/* BUTTON */
 .openBtn{
   padding:6px 10px;
-  border-radius:6px;
   border:none;
+  border-radius:8px;
   background:#38bdf8;
   color:white;
   cursor:pointer;
 }
 
+/* ACTION */
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
-
-/* EMPTY */
-.empty{
-  text-align:center;
-  margin-top:30px;
-  opacity:0.6;
-}
 </style>
 </head>
 
@@ -136,49 +139,32 @@ th{
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <h2>⚡ Dev Dashboard</h2>
+  <h2>⚡ Ultra Admin</h2>
 </div>
 
-<!-- TOP -->
+<!-- TOPBAR -->
 <div class="topbar">
-  <input id="search" placeholder="Search..." oninput="render()">
-  👤 <span id="user"></span>
+  <input id="search" placeholder="🔍 Search..." oninput="render()">
+  👤 <span id="username"></span>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- STATS -->
   <div class="stats">
-    <div class="stat">👤 Users<br><span id="usersCount">0</span></div>
-    <div class="stat">📁 Projects<br><span id="projectsCount">0</span></div>
+    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
   </div>
 
-  <!-- ADD -->
-  <div>
-    <input id="u" placeholder="User">
-    <input id="n" placeholder="Project">
-    <input id="l" placeholder="Link">
+  <div class="card">
+    <h3>➕ Add Project</h3>
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- TABLE -->
-  <table>
-    <thead>
-      <tr>
-        <th>User</th>
-        <th>Project</th>
-        <th>Link</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-
-    <tbody id="list"></tbody>
-  </table>
-
-  <div id="empty" class="empty" style="display:none;">
-    No data found 📭
-  </div>
+  <div id="list"></div>
 
 </div>
 
@@ -188,7 +174,7 @@ if(localStorage.getItem("auth") !== "true"){
   location.href="index.html";
 }
 
-document.getElementById("user").innerText =
+document.getElementById("username").innerText =
   localStorage.getItem("user");
 
 function getData(){
@@ -203,36 +189,43 @@ function save(d){
 function add(){
   let d = getData();
 
-  let u = document.getElementById("u").value;
-  let n = document.getElementById("n").value;
-  let l = document.getElementById("l").value;
+  let user = document.getElementById("user").value;
+  let name = document.getElementById("name").value;
+  let link = document.getElementById("link").value;
 
-  if(!u || !n || !l){
+  if(!user || !name || !link){
     alert("Fill all");
     return;
   }
 
-  if(!l.startsWith("http")) l = "https://" + l;
+  if(!link.startsWith("http")){
+    link = "https://" + link;
+  }
 
-  d.push({id:Date.now(), user:u, name:n, link:l});
+  d.push({
+    id: Date.now(),
+    user,
+    name,
+    link
+  });
+
   save(d);
-
   render();
 }
 
 /* DELETE */
-function del(id){
-  let d = getData().filter(x=>x.id!==id);
+function delProject(id){
+  let d = getData().filter(x => x.id !== id);
   save(d);
   render();
 }
 
 /* EDIT */
-function edit(id){
+function editProject(id){
   let d = getData();
-  let p = d.find(x=>x.id===id);
+  let p = d.find(x => x.id === id);
 
-  let n = prompt("Edit project", p.name);
+  let n = prompt("Edit name", p.name);
   if(n) p.name = n;
 
   let l = prompt("Edit link", p.link);
@@ -245,54 +238,68 @@ function edit(id){
   render();
 }
 
-/* RENDER FLAT */
+/* STATS */
+function updateStats(d){
+  let users = new Set(d.map(p => p.user));
+  document.getElementById("totalUsers").innerText = users.size;
+  document.getElementById("totalProjects").innerText = d.length;
+}
+
+/* RENDER + SEARCH */
 function render(){
   let d = getData();
 
   let q = document.getElementById("search").value?.toLowerCase() || "";
 
-  let f = d.filter(p =>
+  let filtered = d.filter(p =>
     p.user.toLowerCase().includes(q) ||
     p.name.toLowerCase().includes(q)
   );
 
-  document.getElementById("usersCount").innerText =
-    new Set(f.map(x=>x.user)).size;
-
-  document.getElementById("projectsCount").innerText =
-    f.length;
+  updateStats(filtered);
 
   let box = document.getElementById("list");
-  let empty = document.getElementById("empty");
-
   box.innerHTML = "";
 
-  if(f.length === 0){
-    empty.style.display = "block";
-    return;
-  }else{
-    empty.style.display = "none";
-  }
+  let grouped = {};
 
-  f.forEach(p=>{
-    box.innerHTML += `
+  filtered.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user] = [];
+    grouped[p.user].push(p);
+  });
+
+  for(let u in grouped){
+
+    let rows = grouped[u].map(p => `
       <tr>
-        <td>${p.user}</td>
         <td>${p.name}</td>
-
         <td>
           <a href="${p.link}" target="_blank">
             <button class="openBtn">OPEN</button>
           </a>
         </td>
-
         <td>
-          <span class="delete" onclick="del(${p.id})">del</span>
-          <span class="edit" onclick="edit(${p.id})">edit</span>
+          <span class="delete" onclick="delProject(${p.id})">del</span>
+          <span class="edit" onclick="editProject(${p.id})">edit</span>
         </td>
       </tr>
+    `).join("");
+
+    box.innerHTML += `
+      <div class="card">
+        <h3>👤 ${u}</h3>
+
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+      </div>
     `;
-  });
+  }
 }
 
 render();
