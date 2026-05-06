@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dashboard Pro</title>
+<title>Dashboard Pro UI</title>
 
 <style>
 body{
@@ -10,32 +10,83 @@ body{
   font-family:'Segoe UI', sans-serif;
   background:#0a0f1c;
   color:white;
-  display:flex;
 }
 
+/* SIDEBAR FIXED */
 .sidebar{
+  position:fixed;
+  left:0;
+  top:0;
   width:220px;
   height:100vh;
   background:#111827;
   padding:20px;
 }
 
-.sidebar h2{ color:#38bdf8; }
+.sidebar h2{
+  color:#38bdf8;
+}
 
+/* TOPBAR FIXED */
+.topbar{
+  position:fixed;
+  top:0;
+  left:220px;
+  right:0;
+  height:60px;
+  background:#111827;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  padding:0 20px;
+}
+
+/* USER MENU */
+.userMenu{
+  position:relative;
+  cursor:pointer;
+}
+
+.userMenu span{
+  margin-right:5px;
+}
+
+.dropdown{
+  position:absolute;
+  right:0;
+  top:40px;
+  background:#1f2937;
+  border-radius:10px;
+  display:none;
+  overflow:hidden;
+  min-width:150px;
+}
+
+.dropdown div{
+  padding:10px;
+  cursor:pointer;
+}
+
+.dropdown div:hover{
+  background:#374151;
+}
+
+/* MAIN */
 .main{
-  flex:1;
+  margin-left:220px;
+  margin-top:60px;
   padding:20px;
 }
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:15px;
+/* CARD */
+.card{
   background:#111827;
+  padding:15px;
   border-radius:12px;
+  margin-top:15px;
 }
 
+/* INPUT */
 input,button{
   padding:10px;
   margin:5px;
@@ -54,47 +105,44 @@ button{
   cursor:pointer;
 }
 
-.card{
-  background:#111827;
-  padding:15px;
-  margin-top:15px;
-  border-radius:12px;
-}
-
-.delete{
-  color:red;
-  cursor:pointer;
-}
-
-.edit{
-  color:orange;
-  cursor:pointer;
-  margin-left:10px;
-}
+/* ACTION */
+.delete{ color:red; cursor:pointer; }
+.edit{ color:orange; cursor:pointer; margin-left:10px; }
 </style>
 </head>
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Dashboard</h2>
 </div>
 
-<div class="main">
+<!-- TOPBAR -->
+<div class="topbar">
 
-  <div class="topbar">
-    <h3>Welcome 👋 <span id="username"></span></h3>
-    <button onclick="logout()">Logout</button>
+  <div class="userMenu" onclick="toggleMenu()">
+    👤 <span id="username"></span> ▼
+
+    <div id="menu" class="dropdown">
+      <div onclick="openSettings()">⚙️ Settings</div>
+      <div onclick="logout()">🚪 Logout</div>
+    </div>
   </div>
 
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
   <!-- SETTINGS -->
-  <div class="card">
-    <h3>⚙️ Account Settings</h3>
+  <div id="settingsBox" class="card" style="display:none;">
+    <h3>⚙️ Change Password</h3>
 
     <input id="oldPass" type="password" placeholder="Old password">
     <input id="newPass" type="password" placeholder="New password">
 
-    <button onclick="changePassword()">Change Password</button>
+    <button onclick="changePassword()">Change</button>
   </div>
 
   <!-- ADD -->
@@ -108,7 +156,7 @@ button{
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- USERS -->
+  <!-- LIST -->
   <div id="list"></div>
 
 </div>
@@ -117,12 +165,23 @@ button{
 
 /* PROTECT */
 if(localStorage.getItem("auth") !== "true"){
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 
 /* USER NAME */
 document.getElementById("username").innerText =
   localStorage.getItem("user");
+
+/* DROPDOWN */
+function toggleMenu(){
+  let m = document.getElementById("menu");
+  m.style.display = m.style.display === "block" ? "none" : "block";
+}
+
+/* OPEN SETTINGS */
+function openSettings(){
+  document.getElementById("settingsBox").style.display="block";
+}
 
 /* CHANGE PASSWORD */
 function changePassword(){
@@ -132,18 +191,12 @@ function changePassword(){
   let saved = localStorage.getItem("admin_pass");
 
   if(oldP !== saved){
-    alert("❌ Wrong old password");
-    return;
-  }
-
-  if(newP.length < 4){
-    alert("⚠️ Password too short");
+    alert("Wrong old password");
     return;
   }
 
   localStorage.setItem("admin_pass", newP);
-
-  alert("✅ Password changed!");
+  alert("Password updated!");
 }
 
 /* DATA */
@@ -152,7 +205,7 @@ function getData(){
 }
 
 function save(d){
-  localStorage.setItem("projects",JSON.stringify(d));
+  localStorage.setItem("projects", JSON.stringify(d));
 }
 
 /* ADD */
@@ -164,7 +217,7 @@ function add(){
   let link = document.getElementById("link").value;
 
   if(!user || !name || !link){
-    alert("Fill all fields");
+    alert("Fill all");
     return;
   }
 
@@ -172,14 +225,9 @@ function add(){
     link = "https://" + link;
   }
 
-  d.push({
-    id: Date.now(),
-    user,
-    name,
-    link
-  });
-
+  d.push({id:Date.now(), user, name, link});
   save(d);
+
   render();
 }
 
@@ -195,15 +243,13 @@ function edit(id){
   let d = getData();
   let p = d.find(x => x.id === id);
 
-  let newName = prompt("Edit project name:", p.name);
-  if(newName) p.name = newName;
+  let n = prompt("Edit name", p.name);
+  if(n) p.name = n;
 
-  let newLink = prompt("Edit link:", p.link);
-  if(newLink){
-    if(!newLink.startsWith("http")){
-      newLink = "https://" + newLink;
-    }
-    p.link = newLink;
+  let l = prompt("Edit link", p.link);
+  if(l){
+    if(!l.startsWith("http")) l="https://"+l;
+    p.link = l;
   }
 
   save(d);
@@ -217,8 +263,8 @@ function render(){
   let html = d.map(p => `
     <div class="card">
       <b>${p.user}</b> - ${p.name}<br>
-      <a href="${p.link}" target="_blank">${p.link}</a>
-      <br><br>
+      <a href="${p.link}" target="_blank">${p.link}</a><br><br>
+
       <span class="delete" onclick="del(${p.id})">delete</span>
       <span class="edit" onclick="edit(${p.id})">edit</span>
     </div>
@@ -232,7 +278,7 @@ render();
 /* LOGOUT */
 function logout(){
   localStorage.clear();
-  window.location.href = "index.html";
+  location.href="index.html";
 }
 
 </script>
