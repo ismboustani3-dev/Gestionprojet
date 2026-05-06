@@ -35,7 +35,7 @@ body{
 
 .sidebar button{
   width:100%;
-  margin:5px 0;
+  margin:6px 0;
   padding:10px;
   background:#111827;
   color:white;
@@ -48,7 +48,6 @@ body{
   background:#1f2937;
 }
 
-/* TOPBAR */
 .topbar{
   position:fixed;
   left:260px;
@@ -61,7 +60,6 @@ body{
   padding:0 20px;
 }
 
-/* MAIN */
 .main{
   margin-left:260px;
   margin-top:65px;
@@ -69,33 +67,11 @@ body{
   width:100%;
 }
 
-#search{
-  padding:10px;
-  border-radius:10px;
-  border:none;
-  background:#111827;
-  color:white;
-  width:220px;
-}
-
 .card{
   background:#111827;
   padding:20px;
   border-radius:15px;
   margin-bottom:20px;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-  margin-bottom:20px;
-}
-
-.stat{
-  background:#111827;
-  padding:20px;
-  border-radius:15px;
 }
 
 input{
@@ -132,60 +108,87 @@ th,td{
 .delete{color:#ef4444;cursor:pointer;margin-right:10px;}
 .edit{color:#facc15;cursor:pointer;}
 
-.section{display:none;}
-.active{display:block;}
+/* MENU */
+.menuBox{
+  position:relative;
+}
+
+.dropdown{
+  display:none;
+  position:absolute;
+  right:0;
+  top:40px;
+  background:#111827;
+  border-radius:10px;
+  overflow:hidden;
+  width:160px;
+}
+
+.dropdown button{
+  width:100%;
+  background:#111827;
+  border:none;
+  padding:10px;
+  color:white;
+  cursor:pointer;
+}
+
+.dropdown button:hover{
+  background:#1f2937;
+}
+
 </style>
 </head>
 <body>
 
 <div class="sidebar">
   <h2>⚡ Ultra Admin</h2>
-  <button onclick="showSection('dashboard')">Dashboard</button>
-  <button onclick="showSection('users')">User Management</button>
-  <button onclick="showSection('projects')">Projects</button>
+  <button onclick="show('dashboard')">Dashboard</button>
+  <button onclick="show('users')">Users</button>
+  <button onclick="show('projects')">Projects</button>
 </div>
 
 <div class="topbar">
   <input id="search" placeholder="Search..." oninput="render()">
-  <div>👤 <span id="username"></span></div>
+
+  <div class="menuBox">
+    👤 <span id="username"></span>
+    <button onclick="toggleMenu()">⚙</button>
+
+    <div id="menu" class="dropdown">
+      <button onclick="changePassword()">Change Password</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 </div>
 
 <div class="main">
 
-  <!-- DASHBOARD -->
-  <div id="dashboard" class="section active">
-    <div class="stats">
-      <div class="stat">👤 Users: <span id="totalUsers">0</span></div>
-      <div class="stat">📁 Projects: <span id="totalProjects">0</span></div>
-    </div>
+  <div id="dashboard" class="card section">
+    <h3>Dashboard</h3>
+    <p>Users: <span id="uCount"></span></p>
+    <p>Projects: <span id="pCount"></span></p>
   </div>
 
-  <!-- USERS -->
-  <div id="users" class="section">
-    <div class="card">
-      <h3>User Management</h3>
-      <input id="newUser" placeholder="New user name">
-      <button onclick="addUser()">Add User</button>
-      <table>
-        <thead>
-          <tr><th>User</th><th>Action</th></tr>
-        </thead>
-        <tbody id="userList"></tbody>
-      </table>
-    </div>
+  <div id="users" class="card section">
+    <h3>User Management</h3>
+    <input id="newUser" placeholder="Add user">
+    <button onclick="addUser()">Add</button>
+    <table><tbody id="userList"></tbody></table>
   </div>
 
-  <!-- PROJECTS -->
   <div id="projects" class="section">
+
     <div class="card">
       <h3>Add Project</h3>
       <input id="user" placeholder="User">
-      <input id="name" placeholder="Project name">
-      <input id="link" placeholder="Project link">
+      <input id="name" placeholder="Project">
+      <input id="link" placeholder="Link">
       <button onclick="addProject()">Add</button>
     </div>
 
     <div id="list"></div>
+
   </div>
 
 </div>
@@ -194,47 +197,68 @@ th,td{
 
 if(!localStorage.getItem("projects")) localStorage.setItem("projects","[]");
 if(!localStorage.getItem("users")) localStorage.setItem("users",JSON.stringify(["admin"]));
+if(!localStorage.getItem("pass")) localStorage.setItem("pass","1234");
 
-function getProjects(){return JSON.parse(localStorage.getItem("projects"));}
-function saveProjects(d){localStorage.setItem("projects",JSON.stringify(d));}
+let authUser="admin";
+document.getElementById("username").innerText=authUser;
 
-function getUsers(){return JSON.parse(localStorage.getItem("users"));}
-function saveUsers(d){localStorage.setItem("users",JSON.stringify(d));}
+function getP(){return JSON.parse(localStorage.getItem("projects"));}
+function saveP(d){localStorage.setItem("projects",JSON.stringify(d));}
 
-function showSection(id){
-  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+function getU(){return JSON.parse(localStorage.getItem("users"));}
+function saveU(d){localStorage.setItem("users",JSON.stringify(d));}
+
+function show(id){
+  document.querySelectorAll(".section").forEach(e=>e.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+show('dashboard');
+
+/* MENU */
+function toggleMenu(){
+  let m=document.getElementById("menu");
+  m.style.display=m.style.display==="block"?"none":"block";
 }
 
-document.getElementById("username").innerText="admin";
+function changePassword(){
+  let old=prompt("Old password");
+  if(old!==localStorage.getItem("pass")) return alert("Wrong");
+  let n=prompt("New password");
+  if(n) localStorage.setItem("pass",n);
+}
+
+function logout(){
+  localStorage.removeItem("auth");
+  location.href="index.html";
+}
 
 /* USERS */
 function addUser(){
   let u=document.getElementById("newUser").value;
   if(!u) return;
-  let users=getUsers();
-  if(!users.includes(u)) users.push(u);
-  saveUsers(users);
+  let d=getU();
+  if(!d.includes(u)) d.push(u);
+  saveU(d);
   renderUsers();
 }
 
-function deleteUser(u){
-  saveUsers(getUsers().filter(x=>x!==u));
+function delUser(u){
+  saveU(getU().filter(x=>x!==u));
   renderUsers();
 }
 
 function renderUsers(){
   let box=document.getElementById("userList");
   box.innerHTML="";
-  getUsers().forEach(u=>{
-    box.innerHTML+=`<tr><td>${u}</td><td><span class='delete' onclick="deleteUser('${u}')">del</span></td></tr>`;
+  getU().forEach(u=>{
+    box.innerHTML+=`<tr><td>${u}</td><td><span class='delete' onclick="delUser('${u}')">del</span></td></tr>`;
   });
-  updateStats();
+  stats();
 }
 
-/* PROJECTS */
+/* PROJECTS PER USER */
 function addProject(){
-  let d=getProjects();
+  let d=getP();
   let user=document.getElementById("user").value;
   let name=document.getElementById("name").value;
   let link=document.getElementById("link").value;
@@ -244,51 +268,56 @@ function addProject(){
   if(!link.startsWith("http")) link="https://"+link;
 
   d.push({id:Date.now(),user,name,link});
-  saveProjects(d);
+  saveP(d);
   renderProjects();
 }
 
-function deleteProject(id){
-  saveProjects(getProjects().filter(x=>x.id!==id));
+function delProject(id){
+  saveP(getP().filter(x=>x.id!==id));
   renderProjects();
 }
 
 function renderProjects(){
-  let d=getProjects();
+  let d=getP();
   let q=document.getElementById("search").value?.toLowerCase()||"";
 
-  let filtered=d.filter(p=>p.user.toLowerCase().includes(q)||p.name.toLowerCase().includes(q));
+  let filtered=d.filter(p=>
+    p.user.toLowerCase().includes(q)||p.name.toLowerCase().includes(q)
+  );
 
   let box=document.getElementById("list");
   box.innerHTML="";
 
-  let grouped={};
+  let groups={};
+
   filtered.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user]=[];
-    grouped[p.user].push(p);
+    if(!groups[p.user]) groups[p.user]=[];
+    groups[p.user].push(p);
   });
 
-  Object.keys(grouped).forEach(u=>{
-    let rows=grouped[u].map(p=>`
+  Object.keys(groups).forEach(u=>{
+
+    let rows=groups[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-        <td><a href='${p.link}' target='_blank'>link</a></td>
-        <td><span class='delete' onclick='deleteProject(${p.id})'>del</span></td>
+        <td><a href='${p.link}' target='_blank'>open</a></td>
+        <td><span class='delete' onclick='delProject(${p.id})'>del</span></td>
       </tr>
     `).join("");
 
-    box.innerHTML+=`<div class='card'><h3>${u}</h3><table>${rows}</table></div>`;
+    box.innerHTML+=`<div class='card'><h3>User: ${u}</h3><table>${rows}</table></div>`;
+
   });
 
-  updateStats();
+  stats();
 }
 
-function updateStats(){
-  let p=getProjects();
-  let u=new Set(p.map(x=>x.user));
+function stats(){
+  let d=getP();
+  let u=new Set(d.map(x=>x.user));
 
-  document.getElementById("totalUsers").innerText=u.size;
-  document.getElementById("totalProjects").innerText=p.length;
+  document.getElementById("uCount").innerText=u.size;
+  document.getElementById("pCount").innerText=d.length;
 }
 
 function render(){renderProjects();}
@@ -297,5 +326,6 @@ renderUsers();
 renderProjects();
 
 </script>
+
 </body>
 </html>
