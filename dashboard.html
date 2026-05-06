@@ -23,9 +23,7 @@ body{
   padding:20px;
 }
 
-.sidebar h2{
-  color:#38bdf8;
-}
+.sidebar h2{ color:#38bdf8; }
 
 /* TOPBAR */
 .topbar{
@@ -54,7 +52,6 @@ body{
   background:#1f2937;
   border-radius:10px;
   display:none;
-  overflow:hidden;
 }
 
 .dropdown div{
@@ -86,7 +83,6 @@ body{
   border-radius:12px;
   text-align:center;
   color:#38bdf8;
-  font-size:18px;
 }
 
 /* CARD */
@@ -95,6 +91,24 @@ body{
   padding:15px;
   border-radius:12px;
   margin-top:15px;
+}
+
+/* TABLE */
+table{
+  width:100%;
+  margin-top:10px;
+  border-collapse:collapse;
+}
+
+th{
+  text-align:left;
+  padding:8px;
+  color:#38bdf8;
+}
+
+td{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
 /* INPUT */
@@ -146,15 +160,8 @@ button{
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat">
-      👤 Users<br>
-      <span id="totalUsers">0</span>
-    </div>
-
-    <div class="stat">
-      📁 Projects<br>
-      <span id="totalProjects">0</span>
-    </div>
+    <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
+    <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
   </div>
 
   <!-- SETTINGS -->
@@ -168,15 +175,13 @@ button{
   <!-- ADD -->
   <div class="card">
     <h3>➕ Add Project</h3>
-
     <input id="user" placeholder="Username">
     <input id="name" placeholder="Project name">
     <input id="link" placeholder="Project link">
-
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- LIST -->
+  <!-- USERS TABLE -->
   <div id="list"></div>
 
 </div>
@@ -282,23 +287,54 @@ function updateStats(data){
   document.getElementById("totalProjects").innerText = data.length;
 }
 
-/* RENDER */
+/* RENDER (GROUPED BY USER) */
 function render(){
   let d = getData();
-
   updateStats(d);
 
-  let html = d.map(p => `
-    <div class="card">
-      <b>${p.user}</b> - ${p.name}<br>
-      <a href="${p.link}" target="_blank">${p.link}</a><br><br>
+  let box = document.getElementById("list");
+  box.innerHTML = "";
 
-      <span class="delete" onclick="del(${p.id})">delete</span>
-      <span class="edit" onclick="edit(${p.id})">edit</span>
-    </div>
-  `).join("");
+  let grouped = {};
 
-  document.getElementById("list").innerHTML = html;
+  d.forEach(p=>{
+    if(!grouped[p.user]) grouped[p.user] = [];
+    grouped[p.user].push(p);
+  });
+
+  for(let u in grouped){
+
+    let rows = grouped[u].map(p=>`
+      <tr>
+        <td>${p.name}</td>
+        <td><a href="${p.link}" target="_blank">open</a></td>
+        <td>
+          <span class="delete" onclick="del(${p.id})">delete</span>
+          <span class="edit" onclick="edit(${p.id})">edit</span>
+        </td>
+      </tr>
+    `).join("");
+
+    box.innerHTML += `
+      <div class="card">
+
+        <div style="display:flex;justify-content:space-between;">
+          <h3>👤 ${u}</h3>
+          <span style="opacity:0.6">${grouped[u].length} projects</span>
+        </div>
+
+        <table>
+          <tr>
+            <th>Project</th>
+            <th>Link</th>
+            <th>Action</th>
+          </tr>
+          ${rows}
+        </table>
+
+      </div>
+    `;
+  }
 }
 
 render();
