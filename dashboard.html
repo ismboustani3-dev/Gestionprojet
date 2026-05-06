@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Admin Pro</title>
+<title>Ultra Admin Panel</title>
 
 <style>
 body{
@@ -19,12 +19,23 @@ body{
   top:0;
   width:240px;
   height:100vh;
-  background: rgba(17,24,39,0.65);
+  background:#111827;
   padding:20px;
-  border-right:1px solid rgba(255,255,255,0.08);
+  border-right:1px solid rgba(255,255,255,0.1);
 }
 
 .sidebar h2{color:#38bdf8;}
+
+.menuBtn{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#0ea5e9;
+  color:white;
+}
 
 /* TOPBAR */
 .topbar{
@@ -33,116 +44,56 @@ body{
   left:240px;
   right:0;
   height:60px;
-  background: rgba(17,24,39,0.5);
+  background:#0f172a;
   display:flex;
   justify-content:space-between;
   align-items:center;
   padding:0 20px;
 }
 
-/* ADMIN MENU */
-#adminMenu{
-  display:none;
-  position:absolute;
-  right:0;
-  top:40px;
-  background:#111827;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
-  width:160px;
-}
-
-#adminMenu button{
-  width:100%;
-  margin:5px 0;
-  padding:8px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  color:white;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-}
-
-#adminMenu button:last-child{
-  background:#ef4444;
-}
-
-/* LAYOUT */
-.container{
-  display:flex;
+/* MAIN */
+.main{
   margin-left:240px;
   margin-top:60px;
-  height:calc(100vh - 60px);
+  padding:20px;
 }
 
-/* USERS LEFT */
-.usersPanel{
-  width:320px;
-  background:#0f172a;
-  border-right:1px solid rgba(255,255,255,0.1);
-  padding:10px;
-  overflow:auto;
-}
-
-/* PROJECTS RIGHT */
-.projectsPanel{
-  flex:1;
-  padding:15px;
-  overflow:auto;
-}
-
-/* CARDS */
+/* CARD */
 .card{
   background:#111827;
   padding:15px;
   margin:10px 0;
   border-radius:10px;
-  border:1px solid rgba(255,255,255,0.1);
 }
 
-/* TABLE */
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:10px;
-}
+/* HIDE/SHOW */
+.hidden{display:none;}
 
-th{
-  text-align:left;
-  color:#38bdf8;
-  padding:8px;
-}
-
-td{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-}
-
-/* INPUT */
 input,button{
   padding:10px;
   margin:5px;
+  border-radius:8px;
   border:none;
-  border-radius:10px;
-}
-
-input{
-  background:#111827;
-  color:white;
 }
 
 button{
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
+  background:#38bdf8;
   color:white;
   cursor:pointer;
 }
 
 .danger{background:#ef4444;}
 
-.link{
-  color:#38bdf8;
-  word-break:break-all;
+.link{color:#38bdf8;}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #333;
 }
 
 </style>
@@ -153,87 +104,154 @@ button{
 <!-- SIDEBAR -->
 <div class="sidebar">
   <h2>⚡ Ultra Admin</h2>
+
+  <button class="menuBtn" onclick="showView('projects')">📁 Projects</button>
+  <button class="menuBtn" onclick="showView('users')">👤 Users</button>
+  <button class="menuBtn" onclick="logout()">🚪 Logout</button>
 </div>
 
 <!-- TOPBAR -->
 <div class="topbar">
-
-  <input id="search" placeholder="🔍 Search..." oninput="render()">
-
-  <div style="position:relative;">
-    👤 <span id="username"></span>
-
-    <button onclick="toggleMenu()">⚙️ Admin</button>
-
-    <div id="adminMenu">
-      <button onclick="openSettings()">Settings</button>
-      <button onclick="logout()">Logout</button>
-    </div>
-  </div>
-
+  <span>Dashboard</span>
+  👤 <span id="username"></span>
 </div>
 
 <!-- MAIN -->
-<div class="container">
+<div class="main">
 
-  <!-- USERS LEFT -->
-  <div class="usersPanel">
-    <h3>👑 Users</h3>
-    <div id="usersBox"></div>
+<!-- PROJECTS VIEW -->
+<div id="projectsView">
+
+  <div class="card">
+    <h3>➕ Add Project</h3>
+    <input id="user" placeholder="Username">
+    <input id="name" placeholder="Project name">
+    <input id="link" placeholder="Project link">
+    <button onclick="add()">Add</button>
   </div>
 
-  <!-- PROJECTS RIGHT -->
-  <div class="projectsPanel">
+  <div id="projectList"></div>
+</div>
 
-    <div class="card">
-      <h3>➕ Add Project</h3>
-      <input id="user" placeholder="Username">
-      <input id="name" placeholder="Project name">
-      <input id="link" placeholder="Project link">
-      <button onclick="add()">Add</button>
-    </div>
-
-    <div id="list"></div>
-
-  </div>
+<!-- USERS VIEW -->
+<div id="usersView" class="hidden">
+  <h3>👤 Users Management</h3>
+  <div id="usersList"></div>
+</div>
 
 </div>
 
 <script>
 
 /* AUTH */
-if(!localStorage.getItem("admin_pass")){
-  localStorage.setItem("admin_pass","1234");
-}
-
-if(localStorage.getItem("auth") !== "true"){
+if(localStorage.getItem("auth")!=="true"){
   location.href="index.html";
 }
 
 document.getElementById("username").innerText =
   localStorage.getItem("user");
 
-/* MENU */
-function toggleMenu(){
-  let m = document.getElementById("adminMenu");
-  m.style.display = (m.style.display==="block")?"none":"block";
+/* DATA */
+function getData(){
+  return JSON.parse(localStorage.getItem("projects")) || [];
+}
+function save(d){
+  localStorage.setItem("projects",JSON.stringify(d));
 }
 
-/* SETTINGS */
-function openSettings(){
-  let old = prompt("Enter password:");
-  if(old !== localStorage.getItem("admin_pass")){
-    alert("Wrong password");
-    return;
+function getUsers(){
+  return JSON.parse(localStorage.getItem("users")) || [];
+}
+function saveUsers(d){
+  localStorage.setItem("users",JSON.stringify(d));
+}
+
+/* SWITCH VIEWS */
+function showView(v){
+  document.getElementById("projectsView").classList.add("hidden");
+  document.getElementById("usersView").classList.add("hidden");
+
+  if(v==="projects"){
+    document.getElementById("projectsView").classList.remove("hidden");
   }
 
-  let np = prompt("New password:");
-  if(np){
-    localStorage.setItem("admin_pass", np);
-    alert("Updated!");
+  if(v==="users"){
+    document.getElementById("usersView").classList.remove("hidden");
+    renderUsers();
   }
+}
 
-  document.getElementById("adminMenu").style.display="none";
+/* PROJECTS */
+function add(){
+  let d=getData();
+
+  let user=document.getElementById("user").value;
+  let name=document.getElementById("name").value;
+  let link=document.getElementById("link").value;
+
+  if(!link.startsWith("http")) link="https://"+link;
+
+  d.push({id:Date.now(),user,name,link});
+  save(d);
+  renderProjects();
+}
+
+function delProject(id){
+  let d=getData().filter(x=>x.id!==id);
+  save(d);
+  renderProjects();
+}
+
+function renderProjects(){
+  let d=getData();
+  let box=document.getElementById("projectList");
+  box.innerHTML="";
+
+  d.forEach(p=>{
+    box.innerHTML+=`
+      <div class="card">
+        <b>${p.user}</b><br>
+        ${p.name}<br>
+        <a class="link" href="${p.link}" target="_blank">${p.link}</a><br>
+        <button onclick="delProject(${p.id})">Delete</button>
+      </div>
+    `;
+  });
+}
+
+/* USERS */
+function deleteUser(u){
+  let d=getUsers().filter(x=>x.username!==u);
+  saveUsers(d);
+  renderUsers();
+}
+
+function editUser(u){
+  let d=getUsers();
+  let user=d.find(x=>x.username===u);
+
+  let np=prompt("New password",user.password);
+  if(np) user.password=np;
+
+  saveUsers(d);
+  renderUsers();
+}
+
+function renderUsers(){
+  let d=getUsers();
+  let box=document.getElementById("usersList");
+  box.innerHTML="";
+
+  d.forEach(u=>{
+    box.innerHTML+=`
+      <div class="card">
+        <b>${u.username}</b><br>
+        ${u.password}<br>
+        <button onclick="editUser('${u.username}')">Edit</button>
+        <button class="danger" onclick="deleteUser('${u.username}')">Delete</button>
+      </div>
+    `;
+  });
 }
 
 /* LOGOUT */
@@ -242,157 +260,8 @@ function logout(){
   location.href="index.html";
 }
 
-/* DATA */
-function getData(){
-  return JSON.parse(localStorage.getItem("projects")) || [];
-}
-
-function save(d){
-  localStorage.setItem("projects", JSON.stringify(d));
-}
-
-function getUsers(){
-  return JSON.parse(localStorage.getItem("users")) || [];
-}
-
-function saveUsers(d){
-  localStorage.setItem("users", JSON.stringify(d));
-}
-
-/* ADD PROJECT */
-function add(){
-  let d = getData();
-
-  let user = document.getElementById("user").value;
-  let name = document.getElementById("name").value;
-  let link = document.getElementById("link").value;
-
-  if(!user || !name || !link) return;
-
-  if(!link.startsWith("http")) link="https://"+link;
-
-  d.push({id:Date.now(), user, name, link});
-  save(d);
-  render();
-}
-
-/* DELETE PROJECT */
-function delProject(id){
-  let d = getData().filter(x=>x.id!==id);
-  save(d);
-  render();
-}
-
-/* EDIT PROJECT */
-function editProject(id){
-  let d = getData();
-  let p = d.find(x=>x.id===id);
-
-  let n = prompt("Name", p.name);
-  let l = prompt("Link", p.link);
-
-  if(n) p.name=n;
-  if(l){
-    if(!l.startsWith("http")) l="https://"+l;
-    p.link=l;
-  }
-
-  save(d);
-  render();
-}
-
-/* USERS */
-function deleteUser(u){
-  let d = getUsers().filter(x=>x.username!==u);
-  saveUsers(d);
-  renderUsers();
-}
-
-function editUser(u){
-  let d = getUsers();
-  let user = d.find(x=>x.username===u);
-
-  let np = prompt("New password", user.password);
-  if(np){
-    user.password=np;
-    saveUsers(d);
-  }
-
-  renderUsers();
-}
-
-/* RENDER USERS */
-function renderUsers(){
-  let d = getUsers();
-  let box = document.getElementById("usersBox");
-
-  box.innerHTML="";
-
-  d.forEach(u=>{
-    box.innerHTML += `
-      <div class="card">
-        <h4>👤 ${u.username}</h4>
-        <p>🔑 ${u.password}</p>
-
-        <button onclick="editUser('${u.username}')">Edit</button>
-        <button class="danger" onclick="deleteUser('${u.username}')">Delete</button>
-      </div>
-    `;
-  });
-}
-
-/* RENDER PROJECTS */
-function renderProjects(){
-  let d = getData();
-  let q = document.getElementById("search").value?.toLowerCase() || "";
-
-  let filtered = d.filter(p =>
-    p.user.toLowerCase().includes(q) ||
-    p.name.toLowerCase().includes(q)
-  );
-
-  let box = document.getElementById("list");
-  box.innerHTML="";
-
-  let grouped={};
-
-  filtered.forEach(p=>{
-    if(!grouped[p.user]) grouped[p.user]=[];
-    grouped[p.user].push(p);
-  });
-
-  for(let u in grouped){
-
-    let rows = grouped[u].map(p=>`
-      <tr>
-        <td>${p.name}</td>
-        <td><a class="link" href="${p.link}" target="_blank">${p.link}</a></td>
-        <td>
-          <span onclick="delProject(${p.id})">❌</span>
-          <span onclick="editProject(${p.id})">✏️</span>
-        </td>
-      </tr>
-    `).join("");
-
-    box.innerHTML += `
-      <div class="card">
-        <h3>👤 ${u}</h3>
-        <table>
-          <tr><th>Project</th><th>Link</th><th>Action</th></tr>
-          ${rows}
-        </table>
-      </div>
-    `;
-  }
-}
-
-/* MAIN */
-function render(){
-  renderProjects();
-  renderUsers();
-}
-
-render();
+/* INIT */
+renderProjects();
 
 </script>
 
