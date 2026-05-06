@@ -45,6 +45,36 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
+/* MENU */
+#menu{
+  position:absolute;
+  top:55px;
+  right:20px;
+  background:#111827;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.1);
+  display:none;
+}
+
+#menu button{
+  width:120px;
+  margin:5px 0;
+  padding:8px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+}
+
+#menu button:first-child{
+  background:#38bdf8;
+}
+
+#menu button:last-child{
+  background:#ef4444;
+}
+
 /* SEARCH */
 #search{
   padding:8px;
@@ -83,14 +113,6 @@ body{
   border-color:#38bdf8;
 }
 
-/* GRID */
-#list{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(340px,1fr));
-  gap:15px;
-  margin-top:15px;
-}
-
 /* CARD */
 .card{
   background: rgba(17,24,39,0.6);
@@ -98,6 +120,7 @@ body{
   padding:15px;
   border-radius:15px;
   border:1px solid rgba(255,255,255,0.08);
+  margin-top:15px;
   transition:0.3s;
 }
 
@@ -148,34 +171,10 @@ button:hover{
   transform:scale(1.05);
 }
 
-/* OPEN BUTTON */
-.openBtn{
-  padding:6px 12px;
-  border-radius:8px;
-  border:none;
-  background:#38bdf8;
-  color:white;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.openBtn:hover{
-  transform:scale(1.1);
-}
-
 /* ACTION */
 .delete{ color:#ef4444; cursor:pointer; }
 .edit{ color:#facc15; cursor:pointer; margin-left:10px; }
 
-/* ANIMATION */
-.card, .stat{
-  animation: fadeIn 0.4s ease-in;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
-}
 </style>
 </head>
 
@@ -189,19 +188,27 @@ button:hover{
 <!-- TOPBAR -->
 <div class="topbar">
   <input id="search" placeholder="🔍 Search user/project..." oninput="render()">
-  👤 <span id="username"></span>
+
+  <div style="display:flex;align-items:center;gap:10px;position:relative;">
+    👤 <span id="username"></span>
+
+    <button onclick="toggleMenu()">⚙️</button>
+
+    <div id="menu">
+      <button onclick="openSettings()">Settings</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- STATS -->
   <div class="stats">
     <div class="stat">👤 Users<br><span id="totalUsers">0</span></div>
     <div class="stat">📁 Projects<br><span id="totalProjects">0</span></div>
   </div>
 
-  <!-- ADD -->
   <div class="card">
     <h3>➕ Add Project</h3>
     <input id="user" placeholder="Username">
@@ -210,7 +217,6 @@ button:hover{
     <button onclick="add()">Add</button>
   </div>
 
-  <!-- LIST -->
   <div id="list"></div>
 
 </div>
@@ -223,6 +229,26 @@ if(localStorage.getItem("auth") !== "true"){
 
 document.getElementById("username").innerText =
   localStorage.getItem("user");
+
+function toggleMenu(){
+  let m = document.getElementById("menu");
+  m.style.display = (m.style.display === "block") ? "none" : "block";
+}
+
+function logout(){
+  localStorage.removeItem("auth");
+  localStorage.removeItem("user");
+  location.href = "index.html";
+}
+
+function openSettings(){
+  let newName = prompt("Change username", localStorage.getItem("user"));
+  if(newName){
+    localStorage.setItem("user", newName);
+    document.getElementById("username").innerText = newName;
+  }
+  document.getElementById("menu").style.display = "none";
+}
 
 function getData(){
   return JSON.parse(localStorage.getItem("projects")) || [];
@@ -286,7 +312,7 @@ function updateStats(d){
   document.getElementById("totalProjects").innerText = d.length;
 }
 
-/* RENDER + SEARCH */
+/* RENDER */
 function render(){
   let d = getData();
   let q = document.getElementById("search").value?.toLowerCase() || "";
@@ -313,13 +339,7 @@ function render(){
     let rows = grouped[u].map(p=>`
       <tr>
         <td>${p.name}</td>
-
-        <td>
-          <a href="${p.link}" target="_blank">
-            <button class="openBtn">OPEN</button>
-          </a>
-        </td>
-
+        <td><a href="${p.link}" target="_blank"><button>OPEN</button></a></td>
         <td>
           <span class="delete" onclick="delProject(${p.id})">del</span>
           <span class="edit" onclick="editProject(${p.id})">edit</span>
@@ -330,7 +350,6 @@ function render(){
     box.innerHTML += `
       <div class="card">
         <h3>👤 ${u}</h3>
-
         <table>
           <tr>
             <th>Project</th>
