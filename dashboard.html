@@ -1,425 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ultra Pro Admin Dashboard</title>
+<script type="module">
 
-<style>
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+import {
+getDatabase,
+ref,
+push,
+set,
+onValue,
+remove,
+update
 }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-body{
-  font-family:'Segoe UI',sans-serif;
-  background:radial-gradient(circle at top,#0f172a,#020617);
-  color:white;
-  overflow-x:hidden;
-}
+/* FIREBASE */
 
-/* SIDEBAR */
+const firebaseConfig = {
 
-.sidebar{
-  position:fixed;
-  left:0;
-  top:0;
-  width:240px;
-  height:100vh;
-  background:rgba(15,23,42,0.7);
-  backdrop-filter:blur(20px);
-  border-right:1px solid rgba(255,255,255,0.08);
-  padding:20px;
-  z-index:100;
-}
+  apiKey: "AIzaSyDkx9FZ_TjNYzz9J6-rdtkKk72HCu1bSOY",
 
-.logo{
-  font-size:28px;
-  font-weight:bold;
-  color:#38bdf8;
-  margin-bottom:30px;
-}
+  authDomain: "ismail-f50ba.firebaseapp.com",
 
-.menu button{
-  width:100%;
-  margin-bottom:10px;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#111827;
-  color:white;
-  cursor:pointer;
-  transition:0.3s;
-}
+  databaseURL: "https://ismail-f50ba-default-rtdb.firebaseio.com",
 
-.menu button:hover{
-  background:#38bdf8;
-  transform:translateX(5px);
-}
+  projectId: "ismail-f50ba",
 
-/* TOPBAR */
+  storageBucket: "ismail-f50ba.firebasestorage.app",
 
-.topbar{
-  position:fixed;
-  left:240px;
-  right:0;
-  top:0;
-  height:70px;
-  background:rgba(15,23,42,0.6);
-  backdrop-filter:blur(15px);
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 20px;
-  z-index:99;
-}
+  messagingSenderId: "580219017127",
 
-.search{
-  width:300px;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#111827;
-  color:white;
-}
+  appId: "1:580219017127:web:5128b2d18bec1c3b4a4882",
 
-.profile{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  position:relative;
-}
+  measurementId: "G-F8K5JWTJS0"
 
-.avatar{
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  background:#38bdf8;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-}
+};
 
-.admin-btn{
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-  color:white;
-  cursor:pointer;
-}
+const app = initializeApp(firebaseConfig);
 
-/* MENU */
+const db = getDatabase(app);
 
-#adminMenu{
-  display:none;
-  position:absolute;
-  right:0;
-  top:55px;
-  width:180px;
-  background:#111827;
-  border-radius:12px;
-  padding:10px;
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-#adminMenu button{
-  width:100%;
-  padding:10px;
-  margin-top:5px;
-  border:none;
-  border-radius:10px;
-  cursor:pointer;
-  color:white;
-  background:#1e293b;
-}
-
-#adminMenu button:last-child{
-  background:#ef4444;
-}
-
-/* MAIN */
-
-.main{
-  margin-left:240px;
-  padding:90px 20px 20px;
-}
-
-/* STATS */
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:15px;
-}
-
-.stat{
-  background:rgba(15,23,42,0.7);
-  padding:20px;
-  border-radius:18px;
-  border:1px solid rgba(56,189,248,0.15);
-  transition:0.3s;
-}
-
-.stat:hover{
-  transform:translateY(-5px);
-}
-
-.stat h2{
-  margin-top:10px;
-  color:#38bdf8;
-}
-
-/* FORM */
-
-.form-box{
-  margin-top:20px;
-  background:rgba(15,23,42,0.7);
-  padding:20px;
-  border-radius:18px;
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-.form-box input{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#111827;
-  color:white;
-}
-
-.add-btn{
-  margin-top:15px;
-  width:100%;
-  padding:13px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(45deg,#38bdf8,#0ea5e9);
-  color:white;
-  cursor:pointer;
-  font-size:16px;
-}
-
-/* LIST */
-
-#list{
-  margin-top:20px;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
-  gap:15px;
-}
-
-/* CARD */
-
-.card{
-  background:rgba(15,23,42,0.7);
-  border-radius:18px;
-  padding:20px;
-  border:1px solid rgba(255,255,255,0.08);
-  transition:0.3s;
-}
-
-.card:hover{
-  transform:translateY(-5px);
-}
-
-.user-title{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:15px;
-}
-
-.user-avatar{
-  width:45px;
-  height:45px;
-  border-radius:50%;
-  background:#38bdf8;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:bold;
-}
-
-.project{
-  background:#0f172a;
-  padding:12px;
-  border-radius:12px;
-  margin-top:10px;
-}
-
-.project a{
-  color:#38bdf8;
-  text-decoration:none;
-  word-break:break-all;
-}
-
-.actions{
-  margin-top:10px;
-  display:flex;
-  gap:10px;
-}
-
-.delete{
-  background:#ef4444;
-  padding:8px 12px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
-
-.edit{
-  background:#f59e0b;
-  padding:8px 12px;
-  border:none;
-  border-radius:10px;
-  color:white;
-  cursor:pointer;
-}
-
-/* TOAST */
-
-.toast{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  background:#38bdf8;
-  color:white;
-  padding:15px 20px;
-  border-radius:12px;
-  display:none;
-  z-index:999;
-}
-
-</style>
-</head>
-
-<body>
-
-<div class="sidebar">
-
-  <div class="logo">
-    ⚡ Ultra Admin
-  </div>
-
-  <div class="menu">
-    <button>📊 Dashboard</button>
-    <button>👤 Users</button>
-    <button>📁 Projects</button>
-    <button>⚙️ Settings</button>
-  </div>
-
-</div>
-
-<div class="topbar">
-
-  <input
-    type="text"
-    id="search"
-    class="search"
-    placeholder="🔍 Search..."
-    oninput="render()"
-  >
-
-  <div class="profile">
-
-    <div class="avatar" id="avatar">
-      A
-    </div>
-
-    <span id="username"></span>
-
-    <button class="admin-btn" onclick="toggleMenu()">
-      Admin
-    </button>
-
-    <div id="adminMenu">
-      <button onclick="changePassword()">
-        Change Password
-      </button>
-
-      <button onclick="logout()">
-        Logout
-      </button>
-    </div>
-
-  </div>
-
-</div>
-
-<div class="main">
-
-  <div class="stats">
-
-    <div class="stat">
-      👤 Users
-      <h2 id="usersCount">0</h2>
-    </div>
-
-    <div class="stat">
-      📁 Projects
-      <h2 id="projectsCount">0</h2>
-    </div>
-
-    <div class="stat">
-      🌐 Online
-      <h2 id="onlineCount">0</h2>
-    </div>
-
-  </div>
-
-  <div class="form-box">
-
-    <h2>➕ Add Project</h2>
-
-    <input type="text" id="user" placeholder="Username">
-
-    <input type="text" id="project" placeholder="Project Name">
-
-    <input type="text" id="link" placeholder="Project Link">
-
-    <button class="add-btn" onclick="addProject()">
-      Add Project
-    </button>
-
-  </div>
-
-  <div id="list"></div>
-
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-
-/* INIT */
-
-if(!localStorage.getItem("projects")){
-  localStorage.setItem("projects","[]");
-}
-
-if(!localStorage.getItem("admin_pass")){
-  localStorage.setItem("admin_pass","1234");
-}
+/* AUTH */
 
 if(localStorage.getItem("auth") !== "true"){
-  location.href="index.html";
+  location.href = "index.html";
 }
 
 /* USER */
 
-let currentUser = localStorage.getItem("user") || "Admin";
+let currentUser =
+localStorage.getItem("user") || "Admin";
 
-document.getElementById("username").innerText = currentUser;
+document.getElementById("username")
+.innerText = currentUser;
 
-document.getElementById("avatar").innerText =
+document.getElementById("avatar")
+.innerText =
 currentUser.charAt(0).toUpperCase();
 
 /* TOAST */
@@ -440,29 +76,42 @@ function toast(msg){
 
 /* MENU */
 
-function toggleMenu(){
+window.toggleMenu = function(){
 
-  let m = document.getElementById("adminMenu");
+  let m =
+  document.getElementById("adminMenu");
 
   m.style.display =
-  m.style.display==="block"
-  ?"none"
-  :"block";
+  m.style.display === "block"
+  ? "none"
+  : "block";
 
 }
 
-/* CHANGE PASSWORD */
+/* LOGOUT */
 
-function changePassword(){
+window.logout = function(){
 
-  let old = prompt("Current password:");
+  localStorage.removeItem("auth");
+
+  localStorage.removeItem("user");
+
+  location.href = "index.html";
+
+}
+
+/* PASSWORD */
+
+window.changePassword = function(){
+
+  let old = prompt("Current password");
 
   if(old !== localStorage.getItem("admin_pass")){
     toast("Wrong password");
     return;
   }
 
-  let np = prompt("New password:");
+  let np = prompt("New password");
 
   if(np){
 
@@ -474,40 +123,9 @@ function changePassword(){
 
 }
 
-/* LOGOUT */
+/* ADD PROJECT */
 
-function logout(){
-
-  localStorage.removeItem("auth");
-
-  localStorage.removeItem("user");
-
-  location.href="index.html";
-
-}
-
-/* DATA */
-
-function getProjects(){
-
-  return JSON.parse(
-    localStorage.getItem("projects")
-  ) || [];
-
-}
-
-function saveProjects(d){
-
-  localStorage.setItem(
-    "projects",
-    JSON.stringify(d)
-  );
-
-}
-
-/* ADD */
-
-function addProject(){
+window.addProject = async function(){
 
   let user =
   document.getElementById("user").value.trim();
@@ -527,28 +145,20 @@ function addProject(){
   }
 
   if(!link.startsWith("http")){
-
     link = "https://" + link;
-
   }
 
-  let d = getProjects();
+  const newRef =
+  push(ref(db,"projects"));
 
-  d.push({
-
-    id:Date.now(),
+  await set(newRef,{
 
     user,
-
     project,
-
     link,
-
     status:"online"
 
   });
-
-  saveProjects(d);
 
   document.getElementById("user").value="";
   document.getElementById("project").value="";
@@ -556,154 +166,129 @@ function addProject(){
 
   toast("Project added");
 
-  render();
-
 }
 
 /* DELETE */
 
-function deleteProject(id){
+window.deleteProject = async function(id){
 
-  let d =
-  getProjects().filter(x=>x.id!==id);
+  await remove(ref(db,"projects/" + id));
 
-  saveProjects(d);
-
-  toast("Project deleted");
-
-  render();
+  toast("Deleted");
 
 }
 
 /* EDIT */
 
-function editProject(id){
-
-  let d = getProjects();
-
-  let p = d.find(x=>x.id===id);
+window.editProject = async function(id,data){
 
   let newName =
-  prompt("Edit project",p.project);
+  prompt("Edit project",data.project);
 
   let newLink =
-  prompt("Edit link",p.link);
+  prompt("Edit link",data.link);
 
-  if(newName){
-    p.project = newName;
+  if(!newName || !newLink) return;
+
+  if(!newLink.startsWith("http")){
+    newLink = "https://" + newLink;
   }
 
-  if(newLink){
+  await update(ref(db,"projects/" + id),{
 
-    if(!newLink.startsWith("http")){
-      newLink = "https://" + newLink;
-    }
+    project:newName,
+    link:newLink
 
-    p.link = newLink;
+  });
 
-  }
-
-  saveProjects(d);
-
-  toast("Project updated");
-
-  render();
+  toast("Updated");
 
 }
 
-/* STATS */
+/* REALTIME RENDER */
 
-function updateStats(d){
+const projectsRef = ref(db,"projects");
 
-  let users =
-  new Set(d.map(x=>x.user));
+onValue(projectsRef,(snapshot)=>{
+
+  let data = snapshot.val() || {};
+
+  let box =
+  document.getElementById("list");
+
+  box.innerHTML = "";
+
+  let users = new Set();
+
+  let total = 0;
+
+  let online = 0;
+
+  let grouped = {};
+
+  Object.entries(data).forEach(([id,p])=>{
+
+    users.add(p.user);
+
+    total++;
+
+    if(p.status==="online"){
+      online++;
+    }
+
+    if(!grouped[p.user]){
+      grouped[p.user] = [];
+    }
+
+    grouped[p.user].push({
+      id,
+      ...p
+    });
+
+  });
 
   document.getElementById("usersCount")
   .innerText = users.size;
 
   document.getElementById("projectsCount")
-  .innerText = d.length;
+  .innerText = total;
 
   document.getElementById("onlineCount")
-  .innerText =
-  d.filter(x=>x.status==="online").length;
-
-}
-
-/* RENDER */
-
-function render(){
-
-  let d = getProjects();
-
-  let q =
-  document.getElementById("search")
-  .value
-  .toLowerCase();
-
-  d = d.filter(x=>
-
-    x.user.toLowerCase().includes(q) ||
-
-    x.project.toLowerCase().includes(q)
-
-  );
-
-  updateStats(d);
-
-  let grouped = {};
-
-  d.forEach(p=>{
-
-    if(!grouped[p.user]){
-
-      grouped[p.user] = [];
-
-    }
-
-    grouped[p.user].push(p);
-
-  });
-
-  let box = document.getElementById("list");
-
-  box.innerHTML = "";
+  .innerText = online;
 
   for(let user in grouped){
 
-    let projects = grouped[user];
-
     let html = "";
 
-    projects.forEach(p=>{
+    grouped[user].forEach(p=>{
 
       html += `
 
-        <div class="project">
+      <div class="project">
 
-          <h3>${p.project}</h3>
+        <h3>${p.project}</h3>
 
-          <a href="${p.link}" target="_blank">
-            ${p.link}
-          </a>
+        <a href="${p.link}" target="_blank">
+          ${p.link}
+        </a>
 
-          <div class="actions">
+        <div class="actions">
 
-            <button
-            class="delete"
-            onclick="deleteProject(${p.id})">
-            Delete
-            </button>
+          <button
+          class="delete"
+          onclick="deleteProject('${p.id}')">
+          Delete
+          </button>
 
-            <button
-            class="edit"
-            onclick="editProject(${p.id})">
-            Edit
-            </button>
-
-          </div>
+          <button
+          class="edit"
+          onclick='editProject("${p.id}", ${JSON.stringify(p)})'>
+          Edit
+          </button>
 
         </div>
+
+      </div>
 
       `;
 
@@ -711,31 +296,26 @@ function render(){
 
     box.innerHTML += `
 
-      <div class="card">
+    <div class="card">
 
-        <div class="user-title">
+      <div class="user-title">
 
-          <div class="user-avatar">
-            ${user.charAt(0).toUpperCase()}
-          </div>
-
-          <h2>${user}</h2>
-
+        <div class="user-avatar">
+          ${user.charAt(0).toUpperCase()}
         </div>
 
-        ${html}
+        <h2>${user}</h2>
 
       </div>
+
+      ${html}
+
+    </div>
 
     `;
 
   }
 
-}
-
-render();
+});
 
 </script>
-
-</body>
-</html>
